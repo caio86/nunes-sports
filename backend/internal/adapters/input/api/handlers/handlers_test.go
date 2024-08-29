@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -12,32 +13,42 @@ import (
 
 func TestGETProducts(t *testing.T) {
 	t.Run("get product with id 1", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "/api/v1/products/1", nil)
+		request := newGetProductRequest(1)
 		response := httptest.NewRecorder()
 
 		GetProduct(response, request)
 
-		got := response.Body.String()
-		want := new(strings.Builder)
-		json.NewEncoder(want).Encode(domain.Product{ID: 1})
+		want := domain.Product{ID: 1}
 
-		if got != want.String() {
-			t.Errorf("got %s, want %s", got, want)
-		}
+		assertJSONResponseBody(t, response.Body.String(), want)
 	})
 
 	t.Run("get product with id 2", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "/api/v1/products/2", nil)
+		request := newGetProductRequest(2)
 		response := httptest.NewRecorder()
 
 		GetProduct(response, request)
 
-		got := response.Body.String()
-		want := new(strings.Builder)
-		json.NewEncoder(want).Encode(domain.Product{ID: 2})
+		want := domain.Product{ID: 2}
 
-		if got != want.String() {
-			t.Errorf("got %s, want %s", got, want)
-		}
+		assertJSONResponseBody(t, response.Body.String(), want)
 	})
+}
+
+func newGetProductRequest(id int) *http.Request {
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/products/%d", id), nil)
+	return req
+}
+
+func assertJSONResponseBody(t *testing.T, got string, want any) {
+	t.Helper()
+
+	wantJSON := new(strings.Builder)
+	if err := json.NewEncoder(wantJSON).Encode(want); err != nil {
+		t.Errorf("failed to encode %s", err)
+	}
+
+	if got != wantJSON.String() {
+		t.Errorf("got %s, want %s", got, wantJSON.String())
+	}
 }

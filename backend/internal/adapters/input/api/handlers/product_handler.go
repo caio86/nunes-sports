@@ -15,20 +15,47 @@ type ProductRepository interface {
 	CreateProduct(product *domain.Product) error
 }
 
-type ProductHandler struct {
-	store ProductRepository
-}
-
 type AddProductRequest struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
 }
 
+type ProductHandler struct {
+	store ProductRepository
+	http.Handler
+}
+
 func NewProductHandler(store ProductRepository) *ProductHandler {
-	return &ProductHandler{
-		store: store,
-	}
+	p := new(ProductHandler)
+
+	p.store = store
+
+	router := http.NewServeMux()
+
+	router.HandleFunc("/api/v1/products", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			p.GetAllProducts(w, r)
+		case http.MethodPost:
+			p.CreateProduct(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	router.HandleFunc("/api/v1/products/", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			p.GetProduct(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	p.Handler = router
+
+	return p
 }
 
 func (p *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) {

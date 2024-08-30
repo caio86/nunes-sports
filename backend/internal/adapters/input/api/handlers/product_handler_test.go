@@ -61,7 +61,7 @@ func TestGETProducts(t *testing.T) {
 	handler := NewProductHandler(&store)
 
 	t.Run("get all products", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "/api/v1/products", nil)
+		request := newGetProductsRequest()
 		response := httptest.NewRecorder()
 
 		handler.ServeHTTP(response, request)
@@ -112,9 +112,9 @@ func TestCreateProduct(t *testing.T) {
 			Name: "arroz",
 		}
 
-		productJSON, _ := json.Marshal(product)
+		json, _ := json.Marshal(product)
 
-		request, _ := http.NewRequest(http.MethodPost, "/api/v1/products", bytes.NewBuffer(productJSON))
+		request := newPostProductRequest(bytes.NewBuffer(json))
 		response := httptest.NewRecorder()
 
 		handler.ServeHTTP(response, request)
@@ -143,7 +143,7 @@ func TestUpdateProduct(t *testing.T) {
 
 		json, _ := json.Marshal(updatedProduct)
 
-		request, _ := http.NewRequest(http.MethodPut, "/api/v1/products/1", bytes.NewBuffer(json))
+		request := newPutProductRequest(1, bytes.NewBuffer(json))
 		response := httptest.NewRecorder()
 
 		handler.ServeHTTP(response, request)
@@ -155,8 +155,23 @@ func TestUpdateProduct(t *testing.T) {
 	})
 }
 
+func newGetProductsRequest() *http.Request {
+	req, _ := http.NewRequest(http.MethodGet, "/api/v1/products", nil)
+	return req
+}
+
 func newGetProductRequest(id int) *http.Request {
 	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/products/%d", id), nil)
+	return req
+}
+
+func newPostProductRequest(body io.Reader) *http.Request {
+	req, _ := http.NewRequest(http.MethodPost, "/api/v1/products", body)
+	return req
+}
+
+func newPutProductRequest(id int, body io.Reader) *http.Request {
+	req, _ := http.NewRequest(http.MethodPut, fmt.Sprintf("/api/v1/products/%d", id), body)
 	return req
 }
 

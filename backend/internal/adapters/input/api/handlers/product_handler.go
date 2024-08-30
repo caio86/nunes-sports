@@ -84,6 +84,7 @@ func (p *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	var req AddProductRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	product := &domain.Product{
@@ -95,6 +96,7 @@ func (p *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	err := p.store.CreateProduct(product)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)

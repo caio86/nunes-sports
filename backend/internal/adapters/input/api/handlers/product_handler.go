@@ -10,7 +10,7 @@ import (
 )
 
 type ProductRepository interface {
-	FindAllProducts() ([]*domain.Product, error)
+	FindAllProducts() []*domain.Product
 	FindProductByID(id int) (*domain.Product, error)
 }
 
@@ -25,11 +25,7 @@ func NewProductHandler(store ProductRepository) *ProductHandler {
 }
 
 func (p *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) {
-	data, err := p.store.FindAllProducts()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	data := p.store.FindAllProducts()
 
 	renderJSON(w, http.StatusOK, data)
 }

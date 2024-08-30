@@ -10,12 +10,12 @@ type InMemoryProductDB struct {
 	store map[int]*domain.Product
 }
 
-func (i *InMemoryProductDB) FindAllProducts() ([]*domain.Product, error) {
+func (i *InMemoryProductDB) FindAllProducts() []*domain.Product {
 	products := make([]*domain.Product, 0, len(i.store))
 	for _, product := range i.store {
 		products = append(products, product)
 	}
-	return products, nil
+	return products
 }
 
 func (i *InMemoryProductDB) FindProductByID(id int) (*domain.Product, error) {

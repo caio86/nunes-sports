@@ -17,12 +17,12 @@ type MockProductRepository struct {
 	products map[int]*domain.Product
 }
 
-func (s *MockProductRepository) FindAllProducts() ([]*domain.Product, error) {
+func (s *MockProductRepository) FindAllProducts() []*domain.Product {
 	products := make([]*domain.Product, 0, len(s.products))
 	for _, product := range s.products {
 		products = append(products, product)
 	}
-	return products, nil
+	return products
 }
 
 func (s *MockProductRepository) FindProductByID(id int) (*domain.Product, error) {

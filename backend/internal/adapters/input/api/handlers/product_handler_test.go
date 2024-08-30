@@ -59,7 +59,7 @@ func TestGETProducts(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/api/v1/products", nil)
 		response := httptest.NewRecorder()
 
-		handler.GetAllProducts(response, request)
+		handler.ServeHTTP(response, request)
 
 		want := []*domain.Product{
 			{ID: 1},
@@ -74,7 +74,7 @@ func TestGETProducts(t *testing.T) {
 		request := newGetProductRequest(1)
 		response := httptest.NewRecorder()
 
-		handler.GetProduct(response, request)
+		handler.ServeHTTP(response, request)
 
 		got := getProductFromResponse(t, response.Body)
 		assertProductID(t, got.ID, 1)
@@ -84,7 +84,7 @@ func TestGETProducts(t *testing.T) {
 		request := newGetProductRequest(2)
 		response := httptest.NewRecorder()
 
-		handler.GetProduct(response, request)
+		handler.ServeHTTP(response, request)
 
 		got := getProductFromResponse(t, response.Body)
 		assertProductID(t, got.ID, 2)
@@ -109,7 +109,7 @@ func TestCreateProduct(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodPost, "/api/v1/products", bytes.NewBuffer(productJSON))
 		response := httptest.NewRecorder()
 
-		handler.CreateProduct(response, request)
+		handler.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusCreated)
 		if store.products[1].Name != product.Name {

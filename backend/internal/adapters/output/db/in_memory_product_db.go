@@ -11,6 +11,13 @@ type InMemoryProductDB struct {
 	lastID int
 }
 
+func NewInMemoryProductDB() *InMemoryProductDB {
+	return &InMemoryProductDB{
+		store:  make(map[int]*domain.Product),
+		lastID: 0,
+	}
+}
+
 func (i *InMemoryProductDB) FindAllProducts() []*domain.Product {
 	products := make([]*domain.Product, 0, len(i.store))
 	for _, product := range i.store {

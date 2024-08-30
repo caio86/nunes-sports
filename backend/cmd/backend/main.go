@@ -9,12 +9,8 @@ import (
 )
 
 func main() {
-	mux := http.NewServeMux()
-	store := &db.InMemoryProductDB{}
+	store := db.NewInMemoryProductDB()
 	handler := handlers.NewProductHandler(store)
 
-	mux.HandleFunc("/api/v1/products", handler.GetAllProducts)
-	mux.HandleFunc("/api/v1/products/", handler.GetProduct)
-
-	log.Fatal(http.ListenAndServe(":5000", mux))
+	log.Fatal(http.ListenAndServe(":5000", handler))
 }

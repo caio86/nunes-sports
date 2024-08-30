@@ -9,18 +9,29 @@ import (
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
 )
 
-func GetProduct(w http.ResponseWriter, r *http.Request) {
+type ProductRepository interface {
+	FindByID(id int) (*domain.Product, error)
+}
+
+type ProductHandler struct {
+	store ProductRepository
+}
+
+func (p *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/api/v1/products/"))
-	data := domain.Product{ID: id}
+	data, err := p.store.FindByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	renderJSON(w, http.StatusOK, data)
 }
 
-func renderJSON(w http.ResponseWriter, statusCode int, v interface{}) {
+func renderJSON(w http.ResponseWriter, statusCode int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	err := json.NewEncoder(w).Encode(v)
-	if err != nil {
+	if err := json.NewEncoder(w).Encode(v); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -3,9 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
+	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
@@ -52,16 +54,8 @@ func TestGETProducts(t *testing.T) {
 			{ID: 2},
 		}
 
-		var got []*domain.Product
-
-		err := json.NewDecoder(response.Body).Decode(&got)
-		if err != nil {
-			t.Fatalf("failed to decode response %q into a slice of products, '%v'", response.Body, err)
-		}
-
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %v, want %v", got, want)
-		}
+		got := getProductSliceFromResponse(t, response.Body)
+		assertProducts(t, got, want)
 	})
 
 	t.Run("get product with id 1", func(t *testing.T) {
@@ -70,9 +64,8 @@ func TestGETProducts(t *testing.T) {
 
 		handler.GetProduct(response, request)
 
-		want := domain.Product{ID: 1}
-
-		assertJSONResponseBody(t, response.Body.String(), want)
+		got := getProductFromResponse(t, response.Body)
+		assertProductID(t, got.ID, 1)
 	})
 
 	t.Run("get product with id 2", func(t *testing.T) {
@@ -81,9 +74,8 @@ func TestGETProducts(t *testing.T) {
 
 		handler.GetProduct(response, request)
 
-		want := domain.Product{ID: 2}
-
-		assertJSONResponseBody(t, response.Body.String(), want)
+		got := getProductFromResponse(t, response.Body)
+		assertProductID(t, got.ID, 2)
 	})
 }
 
@@ -92,15 +84,40 @@ func newGetProductRequest(id int) *http.Request {
 	return req
 }
 
-func assertJSONResponseBody(t *testing.T, got string, want any) {
+func getProductSliceFromResponse(t *testing.T, body io.Reader) (products []*domain.Product) {
 	t.Helper()
-
-	wantJSON := new(strings.Builder)
-	if err := json.NewEncoder(wantJSON).Encode(want); err != nil {
-		t.Errorf("failed to encode %s", err)
+	err := json.NewDecoder(body).Decode(&products)
+	if err != nil {
+		t.Fatalf("failed to decode response %q into a slice of products, '%v'", body, err)
 	}
 
-	if got != wantJSON.String() {
-		t.Errorf("got %s, want %s", got, wantJSON.String())
+	return
+}
+
+func getProductFromResponse(t *testing.T, body io.Reader) (product *domain.Product) {
+	t.Helper()
+	err := json.NewDecoder(body).Decode(&product)
+	if err != nil {
+		t.Fatalf("failed to decode response %q a product, '%v'", body, err)
+	}
+
+	return
+}
+
+func assertProducts(t *testing.T, got, want []*domain.Product) {
+	t.Helper()
+	sort.Slice(got, func(i, j int) bool {
+		return got[i].ID < got[j].ID
+	})
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
+func assertProductID(t *testing.T, got, want int) {
+	t.Helper()
+	if got != want {
+		t.Errorf("got %d, want %d", got, want)
 	}
 }

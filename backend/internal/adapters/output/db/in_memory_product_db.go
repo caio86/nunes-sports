@@ -7,42 +7,35 @@ import (
 )
 
 type InMemoryProductDB struct {
-	store  map[int]*domain.Product
+	store  []*domain.Product
 	lastID int
 }
 
 func NewInMemoryProductDB() *InMemoryProductDB {
 	return &InMemoryProductDB{
-		store:  make(map[int]*domain.Product),
+		store:  make([]*domain.Product, 0),
 		lastID: 0,
 	}
 }
 
 func (i *InMemoryProductDB) FindAllProducts() []*domain.Product {
-	products := make([]*domain.Product, 0, len(i.store))
-	for _, product := range i.store {
-		products = append(products, product)
-	}
-	return products
+	return i.store
 }
 
 func (i *InMemoryProductDB) FindProductByID(id int) (*domain.Product, error) {
-	product, ok := i.store[id]
-	if !ok {
-		return nil, errors.New("could not find the requested product")
+	for _, product := range i.store {
+		if product.ID == id {
+			return product, nil
+		}
 	}
-	return product, nil
+
+	return nil, errors.New("could not find the requested product")
 }
 
 func (i *InMemoryProductDB) CreateProduct(product *domain.Product) error {
 	i.lastID++
 	product.ID = i.lastID
 
-	_, err := i.FindProductByID(product.ID)
-	if err == nil {
-		return errors.New("product already exists")
-	}
-
-	i.store[product.ID] = product
+	i.store = append(i.store, product)
 	return nil
 }

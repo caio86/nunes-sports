@@ -41,7 +41,7 @@ func TestGETProducts(t *testing.T) {
 		},
 	}
 
-	handler := &ProductHandler{&store}
+	handler := NewProductHandler(&store)
 
 	t.Run("get all products", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/api/v1/products", nil)

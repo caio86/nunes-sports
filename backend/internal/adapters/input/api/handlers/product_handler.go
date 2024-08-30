@@ -18,6 +18,12 @@ type ProductHandler struct {
 	store ProductRepository
 }
 
+func NewProductHandler(store ProductRepository) *ProductHandler {
+	return &ProductHandler{
+		store: store,
+	}
+}
+
 func (p *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) {
 	data, err := p.store.FindAllProducts()
 	if err != nil {

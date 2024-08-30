@@ -11,11 +11,11 @@ import (
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
 )
 
-type MockProductRepositoy struct {
+type MockProductRepository struct {
 	products map[int]*domain.Product
 }
 
-func (s *MockProductRepositoy) FindByID(id int) (*domain.Product, error) {
+func (s *MockProductRepository) FindByID(id int) (*domain.Product, error) {
 	product, ok := s.products[id]
 	if !ok {
 		return nil, fmt.Errorf("product with id %d not found", id)
@@ -24,7 +24,7 @@ func (s *MockProductRepositoy) FindByID(id int) (*domain.Product, error) {
 }
 
 func TestGETProducts(t *testing.T) {
-	store := MockProductRepositoy{
+	store := MockProductRepository{
 		map[int]*domain.Product{
 			1: {ID: 1},
 			2: {ID: 2},

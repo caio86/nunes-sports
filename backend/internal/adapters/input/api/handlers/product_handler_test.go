@@ -15,7 +15,7 @@ type MockProductRepository struct {
 	products map[int]*domain.Product
 }
 
-func (s *MockProductRepository) FindByID(id int) (*domain.Product, error) {
+func (s *MockProductRepository) FindProductByID(id int) (*domain.Product, error) {
 	product, ok := s.products[id]
 	if !ok {
 		return nil, fmt.Errorf("product with id %d not found", id)

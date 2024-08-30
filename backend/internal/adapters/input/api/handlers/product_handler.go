@@ -10,7 +10,7 @@ import (
 )
 
 type ProductRepository interface {
-	FindByID(id int) (*domain.Product, error)
+	FindProductByID(id int) (*domain.Product, error)
 }
 
 type ProductHandler struct {
@@ -19,7 +19,7 @@ type ProductHandler struct {
 
 func (p *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/api/v1/products/"))
-	data, err := p.store.FindByID(id)
+	data, err := p.store.FindProductByID(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -65,10 +65,15 @@ func (p *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) 
 }
 
 func (p *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/api/v1/products/"))
+	id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/api/v1/products/"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	data, err := p.store.FindProductByID(id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -78,7 +83,7 @@ func (p *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 func (p *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	var req AddProductRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
 	product := &domain.Product{

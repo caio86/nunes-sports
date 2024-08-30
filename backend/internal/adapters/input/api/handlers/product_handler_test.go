@@ -67,6 +67,7 @@ func TestGETProducts(t *testing.T) {
 		}
 
 		got := getProductSliceFromResponse(t, response.Body)
+		assertStatus(t, response.Code, http.StatusOK)
 		assertProducts(t, got, want)
 	})
 
@@ -77,6 +78,7 @@ func TestGETProducts(t *testing.T) {
 		handler.ServeHTTP(response, request)
 
 		got := getProductFromResponse(t, response.Body)
+		assertStatus(t, response.Code, http.StatusOK)
 		assertProductID(t, got.ID, 1)
 	})
 
@@ -87,6 +89,7 @@ func TestGETProducts(t *testing.T) {
 		handler.ServeHTTP(response, request)
 
 		got := getProductFromResponse(t, response.Body)
+		assertStatus(t, response.Code, http.StatusOK)
 		assertProductID(t, got.ID, 2)
 	})
 }

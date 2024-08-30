@@ -41,21 +41,21 @@ func (i *InMemoryProductDB) CreateProduct(product *domain.Product) error {
 }
 
 func (i *InMemoryProductDB) UpdateProduct(product *domain.Product) error {
-	_, err := i.FindProductByID(product.ID)
+	found, err := i.FindProductByID(product.ID)
 	if err != nil {
 		return err
 	}
 
 	if product.Name != "" {
-		i.store[product.ID].Name = product.Name
+		found.Name = "a"
 	}
 
 	if product.Description != "" {
-		i.store[product.ID].Description = product.Description
+		found.Description = product.Description
 	}
 
 	if product.Price != 0 {
-		i.store[product.ID].Price = product.Price
+		found.Price = product.Price
 	}
 
 	return nil

@@ -44,6 +44,11 @@ func (s *MockProductRepository) CreateProduct(product *domain.Product) error {
 	return nil
 }
 
+func (s *MockProductRepository) UpdateProduct(product *domain.Product) error {
+	s.products[product.ID] = product
+	return nil
+}
+
 func TestGETProducts(t *testing.T) {
 	store := MockProductRepository{
 		map[int]*domain.Product{
@@ -117,6 +122,35 @@ func TestCreateProduct(t *testing.T) {
 		assertStatus(t, response.Code, http.StatusCreated)
 		if store.products[1].Name != product.Name {
 			t.Errorf("did not create product correctly, got %v, want %v", store.products[1], product)
+		}
+	})
+}
+
+func TestUpdateProduct(t *testing.T) {
+	store := MockProductRepository{
+		map[int]*domain.Product{
+			1: {ID: 1, Name: "arroz"},
+		},
+		1,
+	}
+
+	handler := NewProductHandler(&store)
+
+	t.Run("update product", func(t *testing.T) {
+		updatedProduct := &domain.Product{
+			Description: "arroz branco",
+		}
+
+		json, _ := json.Marshal(updatedProduct)
+
+		request, _ := http.NewRequest(http.MethodPut, "/api/v1/products/1", bytes.NewBuffer(json))
+		response := httptest.NewRecorder()
+
+		handler.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusOK)
+		if store.products[1].Description != updatedProduct.Description {
+			t.Errorf("did not update product correctly, got %v, want %v", store.products[1], updatedProduct)
 		}
 	})
 }

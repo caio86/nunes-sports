@@ -12,10 +12,17 @@ import (
 type ProductRepository interface {
 	FindAllProducts() []*domain.Product
 	FindProductByID(id int) (*domain.Product, error)
+	CreateProduct(product *domain.Product) error
 }
 
 type ProductHandler struct {
 	store ProductRepository
+}
+
+type AddProductRequest struct {
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
 }
 
 func NewProductHandler(store ProductRepository) *ProductHandler {
@@ -39,6 +46,26 @@ func (p *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	renderJSON(w, http.StatusOK, data)
+}
+
+func (p *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
+	var req AddProductRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	product := &domain.Product{
+		Name:        req.Name,
+		Description: req.Description,
+		Price:       req.Price,
+	}
+
+	err := p.store.CreateProduct(product)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 func renderJSON(w http.ResponseWriter, statusCode int, v any) {

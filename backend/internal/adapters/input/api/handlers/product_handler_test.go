@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -15,6 +17,7 @@ import (
 
 type MockProductRepository struct {
 	products map[int]*domain.Product
+	lastID   int
 }
 
 func (s *MockProductRepository) FindAllProducts() []*domain.Product {
@@ -28,9 +31,22 @@ func (s *MockProductRepository) FindAllProducts() []*domain.Product {
 func (s *MockProductRepository) FindProductByID(id int) (*domain.Product, error) {
 	product, ok := s.products[id]
 	if !ok {
-		return nil, fmt.Errorf("product with id %d not found", id)
+		return nil, errors.New("could not find the requested product")
 	}
 	return product, nil
+}
+
+func (s *MockProductRepository) CreateProduct(product *domain.Product) error {
+	s.lastID++
+	product.ID = s.lastID
+
+	_, err := s.FindProductByID(product.ID)
+	if err == nil {
+		return errors.New("product already exists")
+	}
+
+	s.products[product.ID] = product
+	return nil
 }
 
 func TestGETProducts(t *testing.T) {
@@ -39,6 +55,7 @@ func TestGETProducts(t *testing.T) {
 			1: {ID: 1},
 			2: {ID: 2},
 		},
+		2,
 	}
 
 	handler := NewProductHandler(&store)
@@ -76,6 +93,36 @@ func TestGETProducts(t *testing.T) {
 
 		got := getProductFromResponse(t, response.Body)
 		assertProductID(t, got.ID, 2)
+	})
+}
+
+func TestCreateProduct(t *testing.T) {
+	store := MockProductRepository{
+		map[int]*domain.Product{},
+		0,
+	}
+
+	handler := NewProductHandler(&store)
+
+	t.Run("create product", func(t *testing.T) {
+		product := domain.Product{
+			Name: "arroz",
+		}
+
+		productJSON, _ := json.Marshal(product)
+
+		request, _ := http.NewRequest(http.MethodPost, "/api/v1/products", bytes.NewBuffer(productJSON))
+		response := httptest.NewRecorder()
+
+		handler.CreateProduct(response, request)
+
+		if response.Code != http.StatusCreated {
+			t.Errorf("status code mismatch, got %d, want %d", response.Code, http.StatusCreated)
+		}
+
+		if store.products[1].Name != product.Name {
+			t.Errorf("did not create product correctly, got %v, want %v", store.products[1], product)
+		}
 	})
 }
 

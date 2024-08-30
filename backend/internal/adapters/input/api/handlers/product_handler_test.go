@@ -15,6 +15,14 @@ type MockProductRepository struct {
 	products map[int]*domain.Product
 }
 
+func (s *MockProductRepository) FindAllProducts() ([]*domain.Product, error) {
+	products := make([]*domain.Product, 0, len(s.products))
+	for _, product := range s.products {
+		products = append(products, product)
+	}
+	return products, nil
+}
+
 func (s *MockProductRepository) FindProductByID(id int) (*domain.Product, error) {
 	product, ok := s.products[id]
 	if !ok {
@@ -32,6 +40,20 @@ func TestGETProducts(t *testing.T) {
 	}
 
 	handler := &ProductHandler{&store}
+
+	t.Run("get all products", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodGet, "/api/v1/products", nil)
+		response := httptest.NewRecorder()
+
+		handler.GetAllProducts(response, request)
+
+		want := []*domain.Product{
+			{ID: 1},
+			{ID: 2},
+		}
+
+		assertJSONResponseBody(t, response.Body.String(), want)
+	})
 
 	t.Run("get product with id 1", func(t *testing.T) {
 		request := newGetProductRequest(1)

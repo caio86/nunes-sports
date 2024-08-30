@@ -10,11 +10,22 @@ import (
 )
 
 type ProductRepository interface {
+	FindAllProducts() ([]*domain.Product, error)
 	FindProductByID(id int) (*domain.Product, error)
 }
 
 type ProductHandler struct {
 	store ProductRepository
+}
+
+func (p *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) {
+	data, err := p.store.FindAllProducts()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	renderJSON(w, http.StatusOK, data)
 }
 
 func (p *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {

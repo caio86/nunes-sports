@@ -40,11 +40,6 @@ func (s *MockProductRepository) CreateProduct(product *domain.Product) error {
 	s.lastID++
 	product.ID = s.lastID
 
-	_, err := s.FindProductByID(product.ID)
-	if err == nil {
-		return errors.New("product already exists")
-	}
-
 	s.products[product.ID] = product
 	return nil
 }
@@ -116,10 +111,7 @@ func TestCreateProduct(t *testing.T) {
 
 		handler.CreateProduct(response, request)
 
-		if response.Code != http.StatusCreated {
-			t.Errorf("status code mismatch, got %d, want %d", response.Code, http.StatusCreated)
-		}
-
+		assertStatus(t, response.Code, http.StatusCreated)
 		if store.products[1].Name != product.Name {
 			t.Errorf("did not create product correctly, got %v, want %v", store.products[1], product)
 		}
@@ -149,6 +141,13 @@ func getProductFromResponse(t *testing.T, body io.Reader) (product *domain.Produ
 	}
 
 	return
+}
+
+func assertStatus(t *testing.T, got, want int) {
+	t.Helper()
+	if got != want {
+		t.Errorf("status code mismatch, got %d, want %d", got, want)
+	}
 }
 
 func assertProducts(t *testing.T, got, want []*domain.Product) {

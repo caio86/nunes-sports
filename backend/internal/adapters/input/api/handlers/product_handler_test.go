@@ -97,6 +97,15 @@ func TestGETProducts(t *testing.T) {
 		assertStatus(t, response.Code, http.StatusOK)
 		assertProductID(t, got.ID, 2)
 	})
+
+	t.Run("return 404 for missing product", func(t *testing.T) {
+		request := newGetProductRequest(3)
+		response := httptest.NewRecorder()
+
+		handler.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusNotFound)
+	})
 }
 
 func TestCreateProduct(t *testing.T) {

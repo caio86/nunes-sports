@@ -13,12 +13,19 @@ type ProductRepository interface {
 	FindAllProducts() []*domain.Product
 	FindProductByID(id int) (*domain.Product, error)
 	CreateProduct(product *domain.Product) error
+	UpdateProduct(product *domain.Product) error
 }
 
 type AddProductRequest struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
+}
+
+type UpdateProductRequest struct {
+	Name        string  `json:"name,omitempty"`
+	Description string  `json:"description,omitempty"`
+	Price       float64 `json:"price,omitempty"`
 }
 
 type ProductHandler struct {
@@ -48,6 +55,8 @@ func NewProductHandler(store ProductRepository) *ProductHandler {
 		switch r.Method {
 		case http.MethodGet:
 			p.GetProduct(w, r)
+		case http.MethodPut:
+			p.UpdateProduct(w, r)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
@@ -100,6 +109,32 @@ func (p *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (p *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/api/v1/products/"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var req UpdateProductRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	product := &domain.Product{
+		ID:          id,
+		Name:        req.Name,
+		Description: req.Description,
+		Price:       req.Price,
+	}
+
+	if err := p.store.UpdateProduct(product); err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
 }
 
 func renderJSON(w http.ResponseWriter, statusCode int, v any) {

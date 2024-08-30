@@ -52,7 +52,16 @@ func TestGETProducts(t *testing.T) {
 			{ID: 2},
 		}
 
-		assertJSONResponseBody(t, response.Body.String(), want)
+		var got []*domain.Product
+
+		err := json.NewDecoder(response.Body).Decode(&got)
+		if err != nil {
+			t.Fatalf("failed to decode response %q into a slice of products, '%v'", response.Body, err)
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v, want %v", got, want)
+		}
 	})
 
 	t.Run("get product with id 1", func(t *testing.T) {

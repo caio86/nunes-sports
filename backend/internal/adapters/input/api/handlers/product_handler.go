@@ -7,15 +7,8 @@ import (
 	"strings"
 
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
+	"github.com/caio86/nunes-sports/backend/internal/core/ports"
 )
-
-type ProductRepository interface {
-	FindAllProducts() []*domain.Product
-	FindProductByID(id int) (*domain.Product, error)
-	CreateProduct(product *domain.Product) error
-	UpdateProduct(product *domain.Product) error
-	DeleteProduct(id int) error
-}
 
 type AddProductRequest struct {
 	Name        string  `json:"name"`
@@ -30,11 +23,11 @@ type UpdateProductRequest struct {
 }
 
 type ProductHandler struct {
-	store ProductRepository
+	store ports.ProductRepository
 	http.Handler
 }
 
-func NewProductHandler(store ProductRepository) *ProductHandler {
+func NewProductHandler(store ports.ProductRepository) *ProductHandler {
 	p := new(ProductHandler)
 
 	p.store = store

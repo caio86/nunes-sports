@@ -6,21 +6,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/caio86/nunes-sports/backend/internal/adapters/input/api/dto"
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
 	"github.com/caio86/nunes-sports/backend/internal/core/ports"
 )
-
-type AddProductRequest struct {
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price"`
-}
-
-type UpdateProductRequest struct {
-	Name        string  `json:"name,omitempty"`
-	Description string  `json:"description,omitempty"`
-	Price       float64 `json:"price,omitempty"`
-}
 
 type ProductHandler struct {
 	store ports.ProductRepository
@@ -86,7 +75,7 @@ func (p *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
-	var req AddProductRequest
+	var req dto.AddProductRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -114,7 +103,7 @@ func (p *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req UpdateProductRequest
+	var req dto.UpdateProductRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

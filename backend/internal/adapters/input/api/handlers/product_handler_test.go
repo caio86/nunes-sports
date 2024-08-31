@@ -49,6 +49,11 @@ func (s *MockProductRepository) UpdateProduct(product *domain.Product) error {
 	return nil
 }
 
+func (s *MockProductRepository) DeleteProduct(id int) error {
+	delete(s.products, id)
+	return nil
+}
+
 func TestGETProducts(t *testing.T) {
 	store := MockProductRepository{
 		map[int]*domain.Product{
@@ -164,6 +169,27 @@ func TestUpdateProduct(t *testing.T) {
 	})
 }
 
+func TestDeleteProduct(t *testing.T) {
+	store := MockProductRepository{
+		map[int]*domain.Product{
+			1: {ID: 1},
+		},
+		1,
+	}
+
+	handler := NewProductHandler(&store)
+
+	t.Run("delete product", func(t *testing.T) {
+		request := newDeleteProductRequest(1)
+		response := httptest.NewRecorder()
+
+		handler.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusNoContent)
+		assertProducts(t, store.FindAllProducts(), []*domain.Product{})
+	})
+}
+
 func newGetProductsRequest() *http.Request {
 	req, _ := http.NewRequest(http.MethodGet, "/api/v1/products", nil)
 	return req
@@ -181,6 +207,11 @@ func newPostProductRequest(body io.Reader) *http.Request {
 
 func newPutProductRequest(id int, body io.Reader) *http.Request {
 	req, _ := http.NewRequest(http.MethodPut, fmt.Sprintf("/api/v1/products/%d", id), body)
+	return req
+}
+
+func newDeleteProductRequest(id int) *http.Request {
+	req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/api/v1/products/%d", id), nil)
 	return req
 }
 

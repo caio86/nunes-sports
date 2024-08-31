@@ -60,3 +60,14 @@ func (i *InMemoryProductDB) UpdateProduct(product *domain.Product) error {
 
 	return nil
 }
+
+func (i *InMemoryProductDB) DeleteProduct(id int) error {
+	for index, product := range i.store {
+		if product.ID == id {
+			i.store = append(i.store[:index], i.store[index+1:]...)
+			return nil
+		}
+	}
+
+	return errors.New("could not find the requested product")
+}

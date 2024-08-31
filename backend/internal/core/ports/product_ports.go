@@ -9,3 +9,11 @@ type ProductRepository interface {
 	Update(product *domain.Product) error
 	Delete(id int) error
 }
+
+type ProductService interface {
+	GetProducts() []*domain.Product
+	GetProductByID(id int) (*domain.Product, error)
+	CreateProduct(product *domain.Product) error
+	UpdateProduct(product *domain.Product) error
+	DeleteProduct(id int) error
+}

@@ -14,6 +14,7 @@ type ProductRepository interface {
 	FindProductByID(id int) (*domain.Product, error)
 	CreateProduct(product *domain.Product) error
 	UpdateProduct(product *domain.Product) error
+	DeleteProduct(id int) error
 }
 
 type AddProductRequest struct {
@@ -57,6 +58,8 @@ func NewProductHandler(store ProductRepository) *ProductHandler {
 			p.GetProduct(w, r)
 		case http.MethodPut:
 			p.UpdateProduct(w, r)
+		case http.MethodDelete:
+			p.DeleteProduct(w, r)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
@@ -135,6 +138,21 @@ func (p *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+}
+
+func (p *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/api/v1/products/"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := p.store.DeleteProduct(id); err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func renderJSON(w http.ResponseWriter, statusCode int, v any) {

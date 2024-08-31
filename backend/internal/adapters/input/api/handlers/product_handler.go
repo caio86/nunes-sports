@@ -12,14 +12,14 @@ import (
 )
 
 type ProductHandler struct {
-	store ports.ProductRepository
+	svc ports.ProductService
 	http.Handler
 }
 
-func NewProductHandler(store ports.ProductRepository) *ProductHandler {
+func NewProductHandler(service ports.ProductService) *ProductHandler {
 	p := new(ProductHandler)
 
-	p.store = store
+	p.svc = service
 
 	router := http.NewServeMux()
 
@@ -53,7 +53,7 @@ func NewProductHandler(store ports.ProductRepository) *ProductHandler {
 }
 
 func (p *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) {
-	data := p.store.FindAll()
+	data := p.svc.GetProducts()
 
 	renderJSON(w, http.StatusOK, data)
 }
@@ -65,7 +65,7 @@ func (p *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := p.store.FindByID(id)
+	data, err := p.svc.GetProductByID(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -87,7 +87,7 @@ func (p *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		Price:       req.Price,
 	}
 
-	err := p.store.Create(product)
+	err := p.svc.CreateProduct(product)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -116,7 +116,7 @@ func (p *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		Price:       req.Price,
 	}
 
-	if err := p.store.Update(product); err != nil {
+	if err := p.svc.UpdateProduct(product); err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -129,7 +129,7 @@ func (p *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := p.store.Delete(id); err != nil {
+	if err := p.svc.DeleteProduct(id); err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}

@@ -15,6 +15,30 @@ import (
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
 )
 
+type MockProductService struct {
+	store MockProductRepository
+}
+
+func (m *MockProductService) GetProducts() []*domain.Product {
+	return m.store.FindAll()
+}
+
+func (m *MockProductService) GetProductByID(id int) (*domain.Product, error) {
+	return m.store.FindByID(id)
+}
+
+func (m *MockProductService) CreateProduct(product *domain.Product) error {
+	return m.store.Create(product)
+}
+
+func (m *MockProductService) UpdateProduct(product *domain.Product) error {
+	return m.store.Update(product)
+}
+
+func (m *MockProductService) DeleteProduct(id int) error {
+	return m.store.Delete(id)
+}
+
 type MockProductRepository struct {
 	products map[int]*domain.Product
 	lastID   int
@@ -63,7 +87,8 @@ func TestGETProducts(t *testing.T) {
 		2,
 	}
 
-	handler := NewProductHandler(&store)
+	service := &MockProductService{store}
+	handler := NewProductHandler(service)
 
 	t.Run("get all products", func(t *testing.T) {
 		request := newGetProductsRequest()
@@ -119,7 +144,8 @@ func TestCreateProduct(t *testing.T) {
 		0,
 	}
 
-	handler := NewProductHandler(&store)
+	service := &MockProductService{store}
+	handler := NewProductHandler(service)
 
 	t.Run("create product", func(t *testing.T) {
 		product := domain.Product{
@@ -148,7 +174,8 @@ func TestUpdateProduct(t *testing.T) {
 		1,
 	}
 
-	handler := NewProductHandler(&store)
+	service := &MockProductService{store}
+	handler := NewProductHandler(service)
 
 	t.Run("update product", func(t *testing.T) {
 		updatedProduct := &domain.Product{
@@ -177,7 +204,8 @@ func TestDeleteProduct(t *testing.T) {
 		1,
 	}
 
-	handler := NewProductHandler(&store)
+	service := &MockProductService{store}
+	handler := NewProductHandler(service)
 
 	t.Run("delete product", func(t *testing.T) {
 		request := newDeleteProductRequest(1)

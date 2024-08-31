@@ -18,11 +18,11 @@ func NewInMemoryProductDB() *InMemoryProductDB {
 	}
 }
 
-func (i *InMemoryProductDB) FindAllProducts() []*domain.Product {
+func (i *InMemoryProductDB) FindAll() []*domain.Product {
 	return i.store
 }
 
-func (i *InMemoryProductDB) FindProductByID(id int) (*domain.Product, error) {
+func (i *InMemoryProductDB) FindByID(id int) (*domain.Product, error) {
 	for _, product := range i.store {
 		if product.ID == id {
 			return product, nil
@@ -32,7 +32,7 @@ func (i *InMemoryProductDB) FindProductByID(id int) (*domain.Product, error) {
 	return nil, errors.New("could not find the requested product")
 }
 
-func (i *InMemoryProductDB) CreateProduct(product *domain.Product) error {
+func (i *InMemoryProductDB) Create(product *domain.Product) error {
 	i.lastID++
 	product.ID = i.lastID
 
@@ -40,8 +40,8 @@ func (i *InMemoryProductDB) CreateProduct(product *domain.Product) error {
 	return nil
 }
 
-func (i *InMemoryProductDB) UpdateProduct(product *domain.Product) error {
-	found, err := i.FindProductByID(product.ID)
+func (i *InMemoryProductDB) Update(product *domain.Product) error {
+	found, err := i.FindByID(product.ID)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (i *InMemoryProductDB) UpdateProduct(product *domain.Product) error {
 	return nil
 }
 
-func (i *InMemoryProductDB) DeleteProduct(id int) error {
+func (i *InMemoryProductDB) Delete(id int) error {
 	for index, product := range i.store {
 		if product.ID == id {
 			i.store = append(i.store[:index], i.store[index+1:]...)

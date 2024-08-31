@@ -20,7 +20,7 @@ type MockProductRepository struct {
 	lastID   int
 }
 
-func (s *MockProductRepository) FindAllProducts() []*domain.Product {
+func (s *MockProductRepository) FindAll() []*domain.Product {
 	products := make([]*domain.Product, 0, len(s.products))
 	for _, product := range s.products {
 		products = append(products, product)
@@ -28,7 +28,7 @@ func (s *MockProductRepository) FindAllProducts() []*domain.Product {
 	return products
 }
 
-func (s *MockProductRepository) FindProductByID(id int) (*domain.Product, error) {
+func (s *MockProductRepository) FindByID(id int) (*domain.Product, error) {
 	product, ok := s.products[id]
 	if !ok {
 		return nil, errors.New("could not find the requested product")
@@ -36,7 +36,7 @@ func (s *MockProductRepository) FindProductByID(id int) (*domain.Product, error)
 	return product, nil
 }
 
-func (s *MockProductRepository) CreateProduct(product *domain.Product) error {
+func (s *MockProductRepository) Create(product *domain.Product) error {
 	s.lastID++
 	product.ID = s.lastID
 
@@ -44,12 +44,12 @@ func (s *MockProductRepository) CreateProduct(product *domain.Product) error {
 	return nil
 }
 
-func (s *MockProductRepository) UpdateProduct(product *domain.Product) error {
+func (s *MockProductRepository) Update(product *domain.Product) error {
 	s.products[product.ID] = product
 	return nil
 }
 
-func (s *MockProductRepository) DeleteProduct(id int) error {
+func (s *MockProductRepository) Delete(id int) error {
 	delete(s.products, id)
 	return nil
 }
@@ -186,7 +186,7 @@ func TestDeleteProduct(t *testing.T) {
 		handler.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusNoContent)
-		assertProducts(t, store.FindAllProducts(), []*domain.Product{})
+		assertProducts(t, store.FindAll(), []*domain.Product{})
 	})
 }
 

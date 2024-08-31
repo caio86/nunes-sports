@@ -47,7 +47,7 @@ func (i *InMemoryProductDB) UpdateProduct(product *domain.Product) error {
 	}
 
 	if product.Name != "" {
-		found.Name = "a"
+		found.Name = product.Name
 	}
 
 	if product.Description != "" {

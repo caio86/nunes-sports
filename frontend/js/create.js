@@ -23,8 +23,8 @@ function createProduct(event) {
     },
     body: JSON.stringify(data),
   })
-    .then((res) => {
-      console.log(res);
+    .then(() => {
+      form.reset();
     })
     .catch((err) => {
       console.error("Error: ", err);

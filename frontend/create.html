@@ -28,27 +28,33 @@
 
     <h1>CREATE</h1>
 
-    <form id="createForm">
+    <div class="formWrapper">
 
-      <div>
-        <label for="name">Name: </label>
-        <input type="text" id="name" name="name"><br>
-      </div>
+      <form id="createForm" onchange="hideError()">
 
-      <div>
-        <label for="description">Description: </label>
-        <input type="text" id="description" name="description"><br>
-      </div>
+        <div>
+          <label for="name">Name: </label>
+          <input type="text" id="name" name="name"><br>
+        </div>
 
-      <div>
-        <label for="price">Price: </label>
-        <input type="number" step="0.01" id="price" name="price"><br>
-      </div>
+        <div>
+          <label for="description">Description: </label>
+          <input type="text" id="description" name="description"><br>
+        </div>
 
-      <div class="submitButton">
-        <button type="submit">Submit</button>
-      </div>
-    </form>
+        <div>
+          <label for="price">Price: </label>
+          <input type="number" step="0.01" id="price" name="price"><br>
+        </div>
+
+        <div class="submitButton">
+          <button type="submit">Submit</button>
+        </div>
+      </form>
+
+      <p class="error hidden">Erro ao enviar</p>
+
+    </div>
 
   </main>
 

@@ -98,9 +98,13 @@ td:nth-child(4)::before {
   content: "R$ ";
 }
 
-/* CREATE */
+.formWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-#createForm {
+form {
   /* display: flex; */
   flex-direction: column;
   width: max-content;
@@ -109,24 +113,24 @@ td:nth-child(4)::before {
   border-radius: 1rem;
 }
 
-#createForm div+div {
+form div+div {
   margin-top: 1rem;
 }
 
-#createForm div label {
+form div label {
   display: inline-block;
   width: 6rem;
   text-align: right;
 }
 
-#createForm div input {
+form div input {
   font: 1rem sans-serif;
   width: 19rem;
 
   border: 1px solid #999;
 }
 
-#createForm div input:hover {
+form div input:hover {
   border-color: #000;
 }
 
@@ -136,4 +140,8 @@ td:nth-child(4)::before {
 
 button {
   margin-left: 0.5rem;
+}
+
+.hidden {
+  display: none;
 }

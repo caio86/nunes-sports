@@ -55,6 +55,10 @@ func (s *ProductService) CreateProduct(product *domain.Product) (*domain.Product
 }
 
 func (s *ProductService) GetProductByCode(code string) (*domain.Product, error) {
+	if err := validateProductCode(code); err != nil {
+		return nil, err
+	}
+
 	product, err := s.repo.FindByCode(code)
 	if err != nil {
 		return nil, ErrProductNotFound
@@ -64,7 +68,7 @@ func (s *ProductService) GetProductByCode(code string) (*domain.Product, error) 
 }
 
 func validateProductCode(code string) error {
-	if _, err := strconv.ParseInt(code, 10, 64); err != nil {
+	if _, err := strconv.ParseUint(code, 10, 64); err != nil {
 		return ErrProductCodeInvalid
 	}
 

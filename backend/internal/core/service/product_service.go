@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
+	"github.com/caio86/nunes-sports/backend/internal/core/ports"
 )
 
 type ProductServiceErr string
@@ -18,7 +19,17 @@ func (e ProductServiceErr) Error() string {
 	return string(e)
 }
 
-func CreateProduct(product *domain.Product) (*domain.Product, error) {
+type ProductService struct {
+	repo ports.ProductRepository
+}
+
+func NewProductService(repo ports.ProductRepository) *ProductService {
+	return &ProductService{
+		repo: repo,
+	}
+}
+
+func (s *ProductService) CreateProduct(product *domain.Product) (*domain.Product, error) {
 	if err := validateProduct(product); err != nil {
 		return nil, err
 	}

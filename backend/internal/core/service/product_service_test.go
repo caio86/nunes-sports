@@ -6,7 +6,15 @@ import (
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
 )
 
+type MockProductRepo struct {
+	FindAllfunc func() ([]*domain.Product, error)
+}
+
+func (m *MockProductRepo) FindAll() ([]*domain.Product, error)
+
 func TestCreateProduct(t *testing.T) {
+	svc := NewProductService(&MockProductRepo{})
+
 	tests := []struct {
 		name        string
 		product     *domain.Product
@@ -28,7 +36,7 @@ func TestCreateProduct(t *testing.T) {
 			expectedErr: ErrProductNameRequired,
 		},
 		{
-			name: "empty product",
+			name: "invalid price",
 			product: &domain.Product{
 				Code:        "2",
 				Name:        "Carne",
@@ -41,7 +49,7 @@ func TestCreateProduct(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got, err := CreateProduct(test.product)
+			got, err := svc.CreateProduct(test.product)
 
 			if test.expectedErr != nil {
 				assertError(t, err, test.expectedErr)

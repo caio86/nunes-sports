@@ -51,7 +51,8 @@ func TestGetProductByCode(t *testing.T) {
 }
 
 func TestCreateProduct(t *testing.T) {
-	svc := NewProductService(NewMockProductRepo())
+	repo := NewMockProductRepo()
+	svc := NewProductService(repo)
 
 	tests := []struct {
 		name        string
@@ -67,6 +68,16 @@ func TestCreateProduct(t *testing.T) {
 				Price:       1,
 			},
 			expectedErr: nil,
+		},
+		{
+			name: "create existing product",
+			product: &domain.Product{
+				Code:        "1",
+				Name:        "Arroz-branco",
+				Description: "Comida",
+				Price:       2,
+			},
+			expectedErr: ErrProductAlreadyExists,
 		},
 		{
 			name:        "empty product",

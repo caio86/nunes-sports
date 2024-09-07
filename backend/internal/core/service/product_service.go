@@ -37,6 +37,15 @@ func (s *ProductService) CreateProduct(product *domain.Product) (*domain.Product
 		return nil, err
 	}
 
+	switch _, err := s.GetProductByCode(product.Code); err {
+	case ErrProductNotFound:
+		break
+	case nil:
+		return nil, ErrProductAlreadyExists
+	default:
+		return nil, err
+	}
+
 	got, err := s.repo.Save(product)
 	if err != nil {
 		return nil, err

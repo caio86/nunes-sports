@@ -31,23 +31,61 @@ func (m *MockProductRepo) Save(product *domain.Product) (*domain.Product, error)
 }
 
 func TestGetProductByCode(t *testing.T) {
+	tests := []struct {
+		name        string
+		code        string
+		product     *domain.Product
+		expectedErr error
+	}{
+		{
+			name: "find product with code 1",
+			code: "1",
+			product: &domain.Product{
+				Code:        "1",
+				Name:        "Arroz",
+				Description: "Comida",
+				Price:       6,
+			},
+			expectedErr: nil,
+		},
+		{
+			name:        "product does not exist",
+			code:        "2",
+			product:     &domain.Product{},
+			expectedErr: ErrProductNotFound,
+		},
+		{
+			name:        "invalid code",
+			code:        "-1",
+			product:     &domain.Product{},
+			expectedErr: ErrProductCodeInvalid,
+		},
+		{
+			name:        "invalid code with letters",
+			code:        "abc",
+			product:     &domain.Product{},
+			expectedErr: ErrProductCodeInvalid,
+		},
+	}
+
 	repo := NewMockProductRepo()
 	svc := NewProductService(repo)
 
-	product := &domain.Product{
-		Code:        "1",
-		Name:        "Arroz",
-		Description: "Comida",
-		Price:       6,
+	for _, test := range tests {
+		repo.products[test.product.Code] = test.product
+
+		t.Run(test.name, func(t *testing.T) {
+			got, err := svc.GetProductByCode(test.code)
+
+			if test.expectedErr != nil {
+				assertError(t, err, test.expectedErr)
+				assertProduct(t, got, nil)
+			} else {
+				assertNoError(t, err)
+				assertProduct(t, got, test.product)
+			}
+		})
 	}
-
-	repo.products[product.Code] = product
-
-	got, err := svc.GetProductByCode(product.Code)
-	want := product
-
-	assertNoError(t, err)
-	assertProduct(t, got, want)
 }
 
 func TestCreateProduct(t *testing.T) {

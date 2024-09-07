@@ -5,5 +5,6 @@ import (
 )
 
 type ProductRepository interface {
-	FindAll() ([]*domain.Product, error)
+	FindByCode(code string) (*domain.Product, error)
+	Save(product *domain.Product) (*domain.Product, error)
 }

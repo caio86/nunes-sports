@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strconv"
+
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
 	"github.com/caio86/nunes-sports/backend/internal/core/ports"
 )
@@ -8,6 +10,7 @@ import (
 type ProductServiceErr string
 
 const (
+	ErrProductCodeInvalid         = ProductServiceErr("product code must be an int")
 	ErrProductNameRequired        = ProductServiceErr("product name is required")
 	ErrProductDescriptionRequired = ProductServiceErr("product description is required")
 	ErrProductPriceInvalid        = ProductServiceErr("product price must be greater than zero")
@@ -34,10 +37,36 @@ func (s *ProductService) CreateProduct(product *domain.Product) (*domain.Product
 		return nil, err
 	}
 
+	got, err := s.repo.Save(product)
+	if err != nil {
+		return nil, err
+	}
+
+	return got, nil
+}
+
+func (s *ProductService) GetProductByCode(code string) (*domain.Product, error) {
+	product, err := s.repo.FindByCode(code)
+	if err != nil {
+		return nil, ErrProductNotFound
+	}
+
 	return product, nil
 }
 
+func validateProductCode(code string) error {
+	if _, err := strconv.ParseInt(code, 10, 64); err != nil {
+		return ErrProductCodeInvalid
+	}
+
+	return nil
+}
+
 func validateProduct(product *domain.Product) error {
+	if err := validateProductCode(product.Code); err != nil {
+		return err
+	}
+
 	if product.Name == "" {
 		return ErrProductNameRequired
 	}

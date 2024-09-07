@@ -7,13 +7,51 @@ import (
 )
 
 type MockProductRepo struct {
-	FindAllfunc func() ([]*domain.Product, error)
+	products map[string]*domain.Product
 }
 
-func (m *MockProductRepo) FindAll() ([]*domain.Product, error)
+func NewMockProductRepo() *MockProductRepo {
+	return &MockProductRepo{
+		products: make(map[string]*domain.Product),
+	}
+}
+
+func (m *MockProductRepo) FindByCode(code string) (*domain.Product, error) {
+	product, ok := m.products[code]
+	if !ok {
+		return nil, ErrProductNotFound
+	}
+
+	return product, nil
+}
+
+func (m *MockProductRepo) Save(product *domain.Product) (*domain.Product, error) {
+	m.products[product.Code] = product
+	return product, nil
+}
+
+func TestGetProductByCode(t *testing.T) {
+	repo := NewMockProductRepo()
+	svc := NewProductService(repo)
+
+	product := &domain.Product{
+		Code:        "1",
+		Name:        "Arroz",
+		Description: "Comida",
+		Price:       6,
+	}
+
+	repo.products[product.Code] = product
+
+	got, err := svc.GetProductByCode(product.Code)
+	want := product
+
+	assertNoError(t, err)
+	assertProduct(t, got, want)
+}
 
 func TestCreateProduct(t *testing.T) {
-	svc := NewProductService(&MockProductRepo{})
+	svc := NewProductService(NewMockProductRepo())
 
 	tests := []struct {
 		name        string
@@ -33,7 +71,7 @@ func TestCreateProduct(t *testing.T) {
 		{
 			name:        "empty product",
 			product:     &domain.Product{},
-			expectedErr: ErrProductNameRequired,
+			expectedErr: ErrProductCodeInvalid,
 		},
 		{
 			name: "invalid price",

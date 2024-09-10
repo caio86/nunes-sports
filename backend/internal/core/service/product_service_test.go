@@ -16,6 +16,16 @@ func NewMockProductRepo() *MockProductRepo {
 	}
 }
 
+func (m *MockProductRepo) Find() ([]*domain.Product, error) {
+	result := make([]*domain.Product, 0)
+
+	for _, product := range m.products {
+		result = append(result, product)
+	}
+
+	return result, nil
+}
+
 func (m *MockProductRepo) FindByCode(code string) (*domain.Product, error) {
 	product, ok := m.products[code]
 	if !ok {
@@ -28,6 +38,31 @@ func (m *MockProductRepo) FindByCode(code string) (*domain.Product, error) {
 func (m *MockProductRepo) Save(product *domain.Product) (*domain.Product, error) {
 	m.products[product.Code] = product
 	return product, nil
+}
+
+func TestGetProducts(t *testing.T) {
+	products := []*domain.Product{
+		{Code: "1", Name: "Arroz", Description: "Comida", Price: 6.50},
+		{Code: "2", Name: "Carne", Description: "Comida", Price: 16.50},
+		{Code: "3", Name: "Pippos", Description: "Comida", Price: 1.99},
+		{Code: "4", Name: "Coca-cola", Description: "Bebida", Price: 6.99},
+		{Code: "5", Name: "Guarana", Description: "Bebida", Price: 5.99},
+	}
+
+	repo := NewMockProductRepo()
+	svc := NewProductService(repo)
+
+	for _, value := range products {
+		repo.products[value.Code] = value
+	}
+
+	got, err := svc.GetProducts()
+
+	assertNoError(t, err)
+
+	if len(got) != len(products) {
+		t.Errorf("got %d, want %d", len(got), len(products))
+	}
 }
 
 func TestGetProductByCode(t *testing.T) {

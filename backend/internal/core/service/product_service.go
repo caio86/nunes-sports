@@ -32,6 +32,15 @@ func NewProductService(repo ports.ProductRepository) *ProductService {
 	}
 }
 
+func (s *ProductService) GetProducts() ([]*domain.Product, error) {
+	products, err := s.repo.Find()
+	if err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
 func (s *ProductService) CreateProduct(product *domain.Product) (*domain.Product, error) {
 	if err := validateProduct(product); err != nil {
 		return nil, err

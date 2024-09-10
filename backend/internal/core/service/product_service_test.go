@@ -7,12 +7,12 @@ import (
 )
 
 type MockProductRepo struct {
-	products map[string]*domain.Product
+	products []*domain.Product
 }
 
 func NewMockProductRepo() *MockProductRepo {
 	return &MockProductRepo{
-		products: make(map[string]*domain.Product),
+		products: make([]*domain.Product, 0),
 	}
 }
 
@@ -27,16 +27,17 @@ func (m *MockProductRepo) Find() ([]*domain.Product, error) {
 }
 
 func (m *MockProductRepo) FindByCode(code string) (*domain.Product, error) {
-	product, ok := m.products[code]
-	if !ok {
-		return nil, ErrProductNotFound
+	for _, value := range m.products {
+		if value.Code == code {
+			return value, nil
+		}
 	}
 
-	return product, nil
+	return nil, ErrProductNotFound
 }
 
 func (m *MockProductRepo) Save(product *domain.Product) (*domain.Product, error) {
-	m.products[product.Code] = product
+	m.products = append(m.products, product)
 	return product, nil
 }
 
@@ -52,9 +53,7 @@ func TestGetProducts(t *testing.T) {
 	repo := NewMockProductRepo()
 	svc := NewProductService(repo)
 
-	for _, value := range products {
-		repo.products[value.Code] = value
-	}
+	repo.products = products
 
 	got, err := svc.GetProducts()
 
@@ -107,7 +106,7 @@ func TestGetProductByCode(t *testing.T) {
 	svc := NewProductService(repo)
 
 	for _, test := range tests {
-		repo.products[test.product.Code] = test.product
+		repo.products = append(repo.products, test.product)
 
 		t.Run(test.name, func(t *testing.T) {
 			got, err := svc.GetProductByCode(test.code)

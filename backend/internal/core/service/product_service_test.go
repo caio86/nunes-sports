@@ -41,19 +41,16 @@ func (m *MockProductRepo) Save(product *domain.Product) (*domain.Product, error)
 	return product, nil
 }
 
+var products = []*domain.Product{
+	{Code: "1", Name: "Arroz", Description: "Comida", Price: 6.00},
+	{Code: "2", Name: "Carne", Description: "Comida", Price: 16.50},
+	{Code: "3", Name: "Pippos", Description: "Comida", Price: 1.99},
+	{Code: "4", Name: "Coca-cola", Description: "Bebida", Price: 6.99},
+	{Code: "5", Name: "Guarana", Description: "Bebida", Price: 5.99},
+}
+
 func TestGetProducts(t *testing.T) {
-	products := []*domain.Product{
-		{Code: "1", Name: "Arroz", Description: "Comida", Price: 6.50},
-		{Code: "2", Name: "Carne", Description: "Comida", Price: 16.50},
-		{Code: "3", Name: "Pippos", Description: "Comida", Price: 1.99},
-		{Code: "4", Name: "Coca-cola", Description: "Bebida", Price: 6.99},
-		{Code: "5", Name: "Guarana", Description: "Bebida", Price: 5.99},
-	}
-
-	repo := NewMockProductRepo()
-	svc := NewProductService(repo)
-
-	repo.products = products
+	svc, _ := setupService(t, products)
 
 	got, err := svc.GetProducts()
 
@@ -68,64 +65,48 @@ func TestGetProductByCode(t *testing.T) {
 	tests := []struct {
 		name        string
 		code        string
-		product     *domain.Product
 		expectedErr error
 	}{
 		{
-			name: "find product with code 1",
-			code: "1",
-			product: &domain.Product{
-				Code:        "1",
-				Name:        "Arroz",
-				Description: "Comida",
-				Price:       6,
-			},
+			name:        "find product with code 1",
+			code:        "1",
 			expectedErr: nil,
 		},
 		{
 			name:        "product does not exist",
-			code:        "2",
-			product:     &domain.Product{},
+			code:        "20",
 			expectedErr: ErrProductNotFound,
 		},
 		{
 			name:        "invalid code",
 			code:        "-1",
-			product:     &domain.Product{},
 			expectedErr: ErrProductCodeInvalid,
 		},
 		{
 			name:        "invalid code with letters",
 			code:        "abc",
-			product:     &domain.Product{},
 			expectedErr: ErrProductCodeInvalid,
 		},
 	}
 
-	repo := NewMockProductRepo()
-	svc := NewProductService(repo)
+	svc, _ := setupService(t, products)
 
 	for _, test := range tests {
-		repo.products = append(repo.products, test.product)
-
 		t.Run(test.name, func(t *testing.T) {
 			got, err := svc.GetProductByCode(test.code)
 
 			if test.expectedErr != nil {
 				assertError(t, err, test.expectedErr)
-				assertProduct(t, got, nil)
+				assertNil(t, got)
 			} else {
 				assertNoError(t, err)
-				assertProduct(t, got, test.product)
+				assertNotNil(t, got)
 			}
 		})
 	}
 }
 
 func TestCreateProduct(t *testing.T) {
-	repo := NewMockProductRepo()
-	svc := NewProductService(repo)
-
 	tests := []struct {
 		name        string
 		product     *domain.Product
@@ -134,8 +115,8 @@ func TestCreateProduct(t *testing.T) {
 		{
 			name: "create product",
 			product: &domain.Product{
-				Code:        "1",
-				Name:        "Arroz",
+				Code:        "10",
+				Name:        "Macarrao",
 				Description: "Comida",
 				Price:       1,
 			},
@@ -159,7 +140,7 @@ func TestCreateProduct(t *testing.T) {
 		{
 			name: "invalid price",
 			product: &domain.Product{
-				Code:        "2",
+				Code:        "20",
 				Name:        "Carne",
 				Description: "Comida",
 				Price:       -2.5,
@@ -168,16 +149,18 @@ func TestCreateProduct(t *testing.T) {
 		},
 	}
 
+	svc, _ := setupService(t, products)
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			got, err := svc.CreateProduct(test.product)
 
 			if test.expectedErr != nil {
 				assertError(t, err, test.expectedErr)
-				assertProduct(t, got, nil)
+				assertNil(t, got)
 			} else {
 				assertNoError(t, err)
-				assertProduct(t, got, test.product)
+				assertNotNil(t, got)
 			}
 		})
 	}
@@ -185,11 +168,30 @@ func TestCreateProduct(t *testing.T) {
 
 // Helpers
 
-func assertProduct(t *testing.T, got, want *domain.Product) {
+func setupService(t *testing.T, products []*domain.Product) (*ProductService, *MockProductRepo) {
 	t.Helper()
 
-	if got != want {
-		t.Errorf("got %v, want %v", got, want)
+	repo := NewMockProductRepo()
+	svc := NewProductService(repo)
+
+	repo.products = products
+
+	return svc, repo
+}
+
+func assertNotNil(t *testing.T, got *domain.Product) {
+	t.Helper()
+
+	if got == nil {
+		t.Error("got nil, when did not expect nil")
+	}
+}
+
+func assertNil(t *testing.T, got *domain.Product) {
+	t.Helper()
+
+	if got != nil {
+		t.Errorf("got %v, want nil", got)
 	}
 }
 

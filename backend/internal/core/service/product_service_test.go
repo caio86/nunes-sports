@@ -1,6 +1,7 @@
 package service
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
@@ -16,12 +17,13 @@ func NewMockProductRepo() *MockProductRepo {
 	}
 }
 
-func (m *MockProductRepo) Find() ([]*domain.Product, error) {
+func (m *MockProductRepo) Find(offset, limit int) ([]*domain.Product, error) {
 	result := make([]*domain.Product, 0)
 
-	for _, product := range m.products {
-		result = append(result, product)
-	}
+	start := offset * limit
+	end := start + limit
+
+	result = m.products[start:end]
 
 	return result, nil
 }
@@ -50,14 +52,29 @@ var products = []*domain.Product{
 }
 
 func TestGetProducts(t *testing.T) {
+	tests := []struct {
+		name           string
+		page           int
+		limit          int
+		expectedResult []*domain.Product
+	}{
+		{name: "get all five", page: 0, limit: 5, expectedResult: products[:5]},
+		{name: "get first two", page: 0, limit: 2, expectedResult: products[:2]},
+		{name: "get second two", page: 1, limit: 2, expectedResult: products[2:4]},
+	}
+
 	svc, _ := setupService(t, products)
 
-	got, err := svc.GetProducts()
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := svc.GetProducts(test.page, test.limit)
 
-	assertNoError(t, err)
+			assertNoError(t, err)
 
-	if len(got) != len(products) {
-		t.Errorf("got %d, want %d", len(got), len(products))
+			if !reflect.DeepEqual(got, test.expectedResult) {
+				t.Errorf("got %v, want %v", got, test.expectedResult)
+			}
+		})
 	}
 }
 

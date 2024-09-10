@@ -5,13 +5,13 @@ import (
 )
 
 type ProductRepository interface {
-	Find() ([]*domain.Product, error)
+	Find(offset, limit int) ([]*domain.Product, error)
 	FindByCode(code string) (*domain.Product, error)
 	Save(product *domain.Product) (*domain.Product, error)
 }
 
 type ProductService interface {
-	GetProducts() ([]*domain.Product, error)
+	GetProducts(page, limit int) ([]*domain.Product, error)
 	GetProductByCode(code string) (*domain.Product, error)
 	CreateProduct(product *domain.Product) (*domain.Product, error)
 }

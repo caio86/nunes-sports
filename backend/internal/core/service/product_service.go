@@ -1,8 +1,6 @@
 package service
 
 import (
-	"strconv"
-
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
 	"github.com/caio86/nunes-sports/backend/internal/core/ports"
 )
@@ -10,7 +8,7 @@ import (
 type ProductServiceErr string
 
 const (
-	ErrProductCodeInvalid         = ProductServiceErr("product code must be an int")
+	ErrProductIsEmpty             = ProductServiceErr("empty product received")
 	ErrProductNameRequired        = ProductServiceErr("product name is required")
 	ErrProductDescriptionRequired = ProductServiceErr("product description is required")
 	ErrProductPriceInvalid        = ProductServiceErr("product price must be greater than zero")
@@ -46,7 +44,7 @@ func (s *ProductService) CreateProduct(product *domain.Product) (*domain.Product
 		return nil, err
 	}
 
-	switch _, err := s.GetProductByCode(product.Code); err {
+	switch _, err := s.GetProductByID(product.ID); err {
 	case ErrProductNotFound:
 		break
 	case nil:
@@ -63,12 +61,8 @@ func (s *ProductService) CreateProduct(product *domain.Product) (*domain.Product
 	return got, nil
 }
 
-func (s *ProductService) GetProductByCode(code string) (*domain.Product, error) {
-	if err := validateProductCode(code); err != nil {
-		return nil, err
-	}
-
-	product, err := s.repo.FindByCode(code)
+func (s *ProductService) GetProductByID(id uint) (*domain.Product, error) {
+	product, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, ErrProductNotFound
 	}
@@ -76,17 +70,9 @@ func (s *ProductService) GetProductByCode(code string) (*domain.Product, error) 
 	return product, nil
 }
 
-func validateProductCode(code string) error {
-	if _, err := strconv.ParseUint(code, 10, 64); err != nil {
-		return ErrProductCodeInvalid
-	}
-
-	return nil
-}
-
 func validateProduct(product *domain.Product) error {
-	if err := validateProductCode(product.Code); err != nil {
-		return err
+	if *product == (domain.Product{}) {
+		return ErrProductIsEmpty
 	}
 
 	if product.Name == "" {

@@ -28,9 +28,9 @@ func (m *MockProductRepo) Find(offset, limit int) ([]*domain.Product, error) {
 	return result, nil
 }
 
-func (m *MockProductRepo) FindByID(code uint) (*domain.Product, error) {
+func (m *MockProductRepo) FindByID(id uint) (*domain.Product, error) {
 	for _, value := range m.products {
-		if value.ID == code {
+		if value.ID == id {
 			return value, nil
 		}
 	}
@@ -52,58 +52,49 @@ var products = []*domain.Product{
 }
 
 func TestGetProducts(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		name           string
 		page           int
 		limit          int
 		expectedResult []*domain.Product
 	}{
-		{name: "get all five", page: 0, limit: 5, expectedResult: products[:5]},
-		{name: "get first two", page: 0, limit: 2, expectedResult: products[:2]},
-		{name: "get second two", page: 1, limit: 2, expectedResult: products[2:4]},
+		{"get all five", 0, 5, products[:5]},
+		{"get first two", 0, 2, products[:2]},
+		{"get second two", 1, 2, products[2:4]},
 	}
 
 	svc, _ := setupService(t, products)
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			got, err := svc.GetProducts(test.page, test.limit)
-
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := svc.GetProducts(tc.page, tc.limit)
 			assertNoError(t, err)
 
-			if !reflect.DeepEqual(got, test.expectedResult) {
-				t.Errorf("got %v, want %v", got, test.expectedResult)
+			if !reflect.DeepEqual(got, tc.expectedResult) {
+				t.Errorf("got %v, want %v", got, tc.expectedResult)
 			}
 		})
 	}
 }
 
 func TestGetProductByID(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		name        string
-		code        uint
+		id          uint
 		expectedErr error
 	}{
-		{
-			name:        "find product with code 1",
-			code:        1,
-			expectedErr: nil,
-		},
-		{
-			name:        "product does not exist",
-			code:        20,
-			expectedErr: ErrProductNotFound,
-		},
+		{"find product with id 1", 1, nil},
+		{"product does not exist", 20, ErrProductNotFound},
 	}
 
 	svc, _ := setupService(t, products)
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			got, err := svc.GetProductByID(test.code)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := svc.GetProductByID(tc.id)
 
-			if test.expectedErr != nil {
-				assertError(t, err, test.expectedErr)
+			if tc.expectedErr != nil {
+				assertError(t, err, tc.expectedErr)
 				assertNil(t, got)
 			} else {
 				assertNoError(t, err)
@@ -114,56 +105,46 @@ func TestGetProductByID(t *testing.T) {
 }
 
 func TestCreateProduct(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		name        string
 		product     *domain.Product
 		expectedErr error
 	}{
 		{
-			name: "create product",
-			product: &domain.Product{
+			"create product", &domain.Product{
 				ID:          10,
 				Name:        "Macarrao",
 				Description: "Comida",
 				Price:       1,
-			},
-			expectedErr: nil,
+			}, nil,
 		},
 		{
-			name: "create existing product",
-			product: &domain.Product{
+			"create existing product", &domain.Product{
 				ID:          1,
 				Name:        "Arroz-branco",
 				Description: "Comida",
 				Price:       2,
-			},
-			expectedErr: ErrProductAlreadyExists,
+			}, ErrProductAlreadyExists,
 		},
+		{"empty product", &domain.Product{}, ErrProductIsEmpty},
 		{
-			name:        "empty product",
-			product:     &domain.Product{},
-			expectedErr: ErrProductIsEmpty,
-		},
-		{
-			name: "invalid price",
-			product: &domain.Product{
+			"invalid price", &domain.Product{
 				ID:          20,
 				Name:        "Carne",
 				Description: "Comida",
 				Price:       -2.5,
-			},
-			expectedErr: ErrProductPriceInvalid,
+			}, ErrProductPriceInvalid,
 		},
 	}
 
 	svc, _ := setupService(t, products)
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			got, err := svc.CreateProduct(test.product)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := svc.CreateProduct(tc.product)
 
-			if test.expectedErr != nil {
-				assertError(t, err, test.expectedErr)
+			if tc.expectedErr != nil {
+				assertError(t, err, tc.expectedErr)
 				assertNil(t, got)
 			} else {
 				assertNoError(t, err)
@@ -173,47 +154,40 @@ func TestCreateProduct(t *testing.T) {
 	}
 }
 
-// Helpers
+// Helper functions
 
 func setupService(t *testing.T, products []*domain.Product) (*ProductService, *MockProductRepo) {
 	t.Helper()
-
 	repo := NewMockProductRepo()
 	svc := NewProductService(repo)
-
 	repo.products = products
-
 	return svc, repo
 }
 
 func assertNotNil(t *testing.T, got *domain.Product) {
 	t.Helper()
-
 	if got == nil {
-		t.Error("got nil, when did not expect nil")
+		t.Error("expected non-nil, but got nil")
 	}
 }
 
 func assertNil(t *testing.T, got *domain.Product) {
 	t.Helper()
-
 	if got != nil {
-		t.Errorf("got %v, want nil", got)
+		t.Errorf("expected nil, but got %v", got)
 	}
 }
 
 func assertError(t *testing.T, got, want error) {
 	t.Helper()
-
 	if got != want {
-		t.Errorf("got %q, want %q", got, want)
+		t.Errorf("expected error %q, but got %q", want, got)
 	}
 }
 
 func assertNoError(t *testing.T, err error) {
 	t.Helper()
-
 	if err != nil {
-		t.Errorf("got %q, when did not expect an error", err)
+		t.Errorf("unexpected error: %v", err)
 	}
 }

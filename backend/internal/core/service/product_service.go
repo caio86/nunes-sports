@@ -8,6 +8,7 @@ import (
 type ProductServiceErr string
 
 const (
+	ErrProductInvalidPagination   = ProductServiceErr("invalid pagination")
 	ErrProductIsEmpty             = ProductServiceErr("empty product received")
 	ErrProductNameRequired        = ProductServiceErr("product name is required")
 	ErrProductDescriptionRequired = ProductServiceErr("product description is required")
@@ -31,6 +32,10 @@ func NewProductService(repo ports.ProductRepository) *ProductService {
 }
 
 func (s *ProductService) GetProducts(page, limit int) ([]*domain.Product, error) {
+	if page < 0 || limit <= 0 {
+		return nil, ErrProductInvalidPagination
+	}
+
 	products, err := s.repo.Find(page, limit)
 	if err != nil {
 		return nil, err

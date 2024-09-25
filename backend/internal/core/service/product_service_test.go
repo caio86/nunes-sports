@@ -17,7 +17,7 @@ func NewMockProductRepo() *MockProductRepo {
 	}
 }
 
-func (m *MockProductRepo) Find(offset, limit uint) ([]*domain.Product, int64, error) {
+func (m *MockProductRepo) Find(offset, limit int) ([]*domain.Product, int64, error) {
 	result := make([]*domain.Product, 0)
 
 	start := offset * limit
@@ -78,8 +78,8 @@ var products = []*domain.Product{
 func TestGetProducts(t *testing.T) {
 	testCases := []struct {
 		name           string
-		page_index     uint
-		page_size      uint
+		page_index     int
+		page_size      int
 		expectedResult []*domain.Product
 	}{
 		{"get all five", 0, 5, products[:5]},
@@ -94,7 +94,7 @@ func TestGetProducts(t *testing.T) {
 			got, _, err := svc.GetProducts(tc.page_index, tc.page_size)
 			assertNoError(t, err)
 
-			if len(got) != int(tc.page_size) {
+			if len(got) != tc.page_size {
 				t.Errorf("want size %d got size %d", tc.page_size, len(got))
 			}
 

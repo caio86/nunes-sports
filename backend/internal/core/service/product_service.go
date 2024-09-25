@@ -31,7 +31,7 @@ func NewProductService(repo ports.ProductRepository) *ProductService {
 	}
 }
 
-func (s *ProductService) GetProducts(page_index, page_size uint) ([]*domain.Product, int64, error) {
+func (s *ProductService) GetProducts(page_index, page_size int) ([]*domain.Product, int64, error) {
 	if page_index < 0 || page_size <= 0 {
 		return nil, 0, ErrProductInvalidPagination
 	}

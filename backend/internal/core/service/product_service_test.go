@@ -17,7 +17,7 @@ func NewMockProductRepo() *MockProductRepo {
 	}
 }
 
-func (m *MockProductRepo) Find(offset, limit int) ([]*domain.Product, error) {
+func (m *MockProductRepo) Find(offset, limit uint) ([]*domain.Product, error) {
 	result := make([]*domain.Product, 0)
 
 	start := offset * limit
@@ -54,8 +54,8 @@ var products = []*domain.Product{
 func TestGetProducts(t *testing.T) {
 	testCases := []struct {
 		name           string
-		page           int
-		limit          int
+		page_index     uint
+		page_size      uint
 		expectedResult []*domain.Product
 	}{
 		{"get all five", 0, 5, products[:5]},
@@ -67,8 +67,12 @@ func TestGetProducts(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := svc.GetProducts(tc.page, tc.limit)
+			got, err := svc.GetProducts(tc.page_index, tc.page_size)
 			assertNoError(t, err)
+
+			if len(got) != int(tc.page_size) {
+				t.Errorf("want size %d got size %d", tc.page_size, len(got))
+			}
 
 			if !reflect.DeepEqual(got, tc.expectedResult) {
 				t.Errorf("got %v, want %v", got, tc.expectedResult)

@@ -17,15 +17,17 @@ func NewMockProductRepo() *MockProductRepo {
 	}
 }
 
-func (m *MockProductRepo) Find(offset, limit uint) ([]*domain.Product, error) {
+func (m *MockProductRepo) Find(offset, limit uint) ([]*domain.Product, int64, error) {
 	result := make([]*domain.Product, 0)
 
 	start := offset * limit
 	end := start + limit
 
+	total := int64(len(m.products))
+
 	result = m.products[start:end]
 
-	return result, nil
+	return result, total, nil
 }
 
 func (m *MockProductRepo) FindByID(id string) (*domain.Product, error) {
@@ -89,7 +91,7 @@ func TestGetProducts(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := svc.GetProducts(tc.page_index, tc.page_size)
+			got, _, err := svc.GetProducts(tc.page_index, tc.page_size)
 			assertNoError(t, err)
 
 			if len(got) != int(tc.page_size) {

@@ -30,13 +30,13 @@ func NewProductService(repo ports.ProductRepository) *ProductService {
 	}
 }
 
-func (s *ProductService) GetProducts(page_index, page_size uint) ([]*domain.Product, error) {
-	products, err := s.repo.Find(page_index, page_size)
+func (s *ProductService) GetProducts(page_index, page_size uint) ([]*domain.Product, int64, error) {
+	products, total, err := s.repo.Find(page_index, page_size)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return products, nil
+	return products, total, nil
 }
 
 func (s *ProductService) CreateProduct(product *domain.Product) (*domain.Product, error) {

@@ -43,6 +43,28 @@ func (m *MockProductRepo) Save(product *domain.Product) (*domain.Product, error)
 	return product, nil
 }
 
+func (m *MockProductRepo) Update(product *domain.Product) (*domain.Product, error) {
+	for i, v := range m.products {
+		if v.Code == product.Code {
+			m.products[i] = product
+			return product, nil
+		}
+	}
+
+	return nil, ErrProductNotFound
+}
+
+func (m *MockProductRepo) Delete(code string) error {
+	for i, v := range m.products {
+		if v.Code == code {
+			m.products[i] = m.products[len(m.products)-1]
+			m.products = m.products[:len(m.products)-1]
+		}
+	}
+
+	return ErrProductNotFound
+}
+
 var products = []*domain.Product{
 	{Code: "1", Name: "Arroz", Description: "Comida", Price: 6.00},
 	{Code: "2", Name: "Carne", Description: "Comida", Price: 16.50},

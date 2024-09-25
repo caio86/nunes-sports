@@ -8,6 +8,8 @@ type ProductRepository interface {
 	Find(offset, limit uint) ([]*domain.Product, error)
 	FindByCode(code string) (*domain.Product, error)
 	Save(product *domain.Product) (*domain.Product, error)
+	Update(product *domain.Product) (*domain.Product, error)
+	Delete(code string) error
 }
 
 type ProductService interface {

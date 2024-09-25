@@ -6,14 +6,14 @@ import (
 
 type ProductRepository interface {
 	Find(offset, limit uint) ([]*domain.Product, error)
-	FindByCode(code string) (*domain.Product, error)
+	FindByID(id string) (*domain.Product, error)
 	Save(product *domain.Product) (*domain.Product, error)
 	Update(product *domain.Product) (*domain.Product, error)
-	Delete(code string) error
+	Delete(id string) error
 }
 
 type ProductService interface {
 	GetProducts(page_index, page_size uint) ([]*domain.Product, error)
-	GetProductByCode(code string) (*domain.Product, error)
+	GetProductByID(id string) (*domain.Product, error)
 	CreateProduct(product *domain.Product) (*domain.Product, error)
 }

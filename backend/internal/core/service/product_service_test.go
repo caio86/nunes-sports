@@ -28,9 +28,9 @@ func (m *MockProductRepo) Find(offset, limit uint) ([]*domain.Product, error) {
 	return result, nil
 }
 
-func (m *MockProductRepo) FindByCode(code string) (*domain.Product, error) {
+func (m *MockProductRepo) FindByID(id string) (*domain.Product, error) {
 	for _, value := range m.products {
-		if value.Code == code {
+		if value.ID == id {
 			return value, nil
 		}
 	}
@@ -45,7 +45,7 @@ func (m *MockProductRepo) Save(product *domain.Product) (*domain.Product, error)
 
 func (m *MockProductRepo) Update(product *domain.Product) (*domain.Product, error) {
 	for i, v := range m.products {
-		if v.Code == product.Code {
+		if v.ID == product.ID {
 			m.products[i] = product
 			return product, nil
 		}
@@ -54,9 +54,9 @@ func (m *MockProductRepo) Update(product *domain.Product) (*domain.Product, erro
 	return nil, ErrProductNotFound
 }
 
-func (m *MockProductRepo) Delete(code string) error {
+func (m *MockProductRepo) Delete(id string) error {
 	for i, v := range m.products {
-		if v.Code == code {
+		if v.ID == id {
 			m.products[i] = m.products[len(m.products)-1]
 			m.products = m.products[:len(m.products)-1]
 		}
@@ -66,11 +66,11 @@ func (m *MockProductRepo) Delete(code string) error {
 }
 
 var products = []*domain.Product{
-	{Code: "1", Name: "Arroz", Description: "Comida", Price: 6.00},
-	{Code: "2", Name: "Carne", Description: "Comida", Price: 16.50},
-	{Code: "3", Name: "Pippos", Description: "Comida", Price: 1.99},
-	{Code: "4", Name: "Coca-cola", Description: "Bebida", Price: 6.99},
-	{Code: "5", Name: "Guarana", Description: "Bebida", Price: 5.99},
+	{ID: "1", Name: "Arroz", Description: "Comida", Price: 6.00},
+	{ID: "2", Name: "Carne", Description: "Comida", Price: 16.50},
+	{ID: "3", Name: "Pippos", Description: "Comida", Price: 1.99},
+	{ID: "4", Name: "Coca-cola", Description: "Bebida", Price: 6.99},
+	{ID: "5", Name: "Guarana", Description: "Bebida", Price: 5.99},
 }
 
 func TestGetProducts(t *testing.T) {
@@ -103,10 +103,10 @@ func TestGetProducts(t *testing.T) {
 	}
 }
 
-func TestGetProductByCode(t *testing.T) {
+func TestGetProductByID(t *testing.T) {
 	testCases := []struct {
 		name        string
-		code        string
+		id          string
 		expectedErr error
 	}{
 		{"find product with id 1", "1", nil},
@@ -117,7 +117,7 @@ func TestGetProductByCode(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := svc.GetProductByCode(tc.code)
+			got, err := svc.GetProductByID(tc.id)
 
 			if tc.expectedErr != nil {
 				assertError(t, err, tc.expectedErr)
@@ -138,7 +138,7 @@ func TestCreateProduct(t *testing.T) {
 	}{
 		{
 			"create product", &domain.Product{
-				Code:        "10",
+				ID:          "10",
 				Name:        "Macarrao",
 				Description: "Comida",
 				Price:       1,
@@ -146,7 +146,7 @@ func TestCreateProduct(t *testing.T) {
 		},
 		{
 			"create existing product", &domain.Product{
-				Code:        "1",
+				ID:          "1",
 				Name:        "Arroz-branco",
 				Description: "Comida",
 				Price:       2,
@@ -155,7 +155,7 @@ func TestCreateProduct(t *testing.T) {
 		{"empty product", &domain.Product{}, ErrProductIsEmpty},
 		{
 			"invalid price", &domain.Product{
-				Code:        "20",
+				ID:          "20",
 				Name:        "Carne",
 				Description: "Comida",
 				Price:       -2.5,

@@ -49,7 +49,7 @@ func (s *ProductService) CreateProduct(product *domain.Product) (*domain.Product
 		return nil, err
 	}
 
-	switch _, err := s.GetProductByCode(product.Code); err {
+	switch _, err := s.GetProductByID(product.ID); err {
 	case ErrProductNotFound:
 		break
 	case nil:
@@ -66,8 +66,8 @@ func (s *ProductService) CreateProduct(product *domain.Product) (*domain.Product
 	return got, nil
 }
 
-func (s *ProductService) GetProductByCode(code string) (*domain.Product, error) {
-	product, err := s.repo.FindByCode(code)
+func (s *ProductService) GetProductByID(id string) (*domain.Product, error) {
+	product, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, ErrProductNotFound
 	}
@@ -80,7 +80,7 @@ func validateProduct(product *domain.Product) error {
 		return ErrProductIsEmpty
 	}
 
-	// Add validation for code
+	// Add validation for id
 
 	if product.Name == "" {
 		return ErrProductNameRequired

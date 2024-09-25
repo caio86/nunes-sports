@@ -1,7 +1,7 @@
 package domain
 
 type Product struct {
-	ID          uint
+	Code        string
 	Name        string
 	Description string
 	Price       float64

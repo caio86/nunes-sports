@@ -28,9 +28,9 @@ func (m *MockProductRepo) Find(offset, limit int) ([]*domain.Product, error) {
 	return result, nil
 }
 
-func (m *MockProductRepo) FindByID(id uint) (*domain.Product, error) {
+func (m *MockProductRepo) FindByCode(code string) (*domain.Product, error) {
 	for _, value := range m.products {
-		if value.ID == id {
+		if value.Code == code {
 			return value, nil
 		}
 	}
@@ -44,11 +44,11 @@ func (m *MockProductRepo) Save(product *domain.Product) (*domain.Product, error)
 }
 
 var products = []*domain.Product{
-	{ID: 1, Name: "Arroz", Description: "Comida", Price: 6.00},
-	{ID: 2, Name: "Carne", Description: "Comida", Price: 16.50},
-	{ID: 3, Name: "Pippos", Description: "Comida", Price: 1.99},
-	{ID: 4, Name: "Coca-cola", Description: "Bebida", Price: 6.99},
-	{ID: 5, Name: "Guarana", Description: "Bebida", Price: 5.99},
+	{Code: "1", Name: "Arroz", Description: "Comida", Price: 6.00},
+	{Code: "2", Name: "Carne", Description: "Comida", Price: 16.50},
+	{Code: "3", Name: "Pippos", Description: "Comida", Price: 1.99},
+	{Code: "4", Name: "Coca-cola", Description: "Bebida", Price: 6.99},
+	{Code: "5", Name: "Guarana", Description: "Bebida", Price: 5.99},
 }
 
 func TestGetProducts(t *testing.T) {
@@ -77,21 +77,21 @@ func TestGetProducts(t *testing.T) {
 	}
 }
 
-func TestGetProductByID(t *testing.T) {
+func TestGetProductByCode(t *testing.T) {
 	testCases := []struct {
 		name        string
-		id          uint
+		code        string
 		expectedErr error
 	}{
-		{"find product with id 1", 1, nil},
-		{"product does not exist", 20, ErrProductNotFound},
+		{"find product with id 1", "1", nil},
+		{"product does not exist", "20", ErrProductNotFound},
 	}
 
 	svc, _ := setupService(t, products)
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := svc.GetProductByID(tc.id)
+			got, err := svc.GetProductByCode(tc.code)
 
 			if tc.expectedErr != nil {
 				assertError(t, err, tc.expectedErr)
@@ -112,7 +112,7 @@ func TestCreateProduct(t *testing.T) {
 	}{
 		{
 			"create product", &domain.Product{
-				ID:          10,
+				Code:        "10",
 				Name:        "Macarrao",
 				Description: "Comida",
 				Price:       1,
@@ -120,7 +120,7 @@ func TestCreateProduct(t *testing.T) {
 		},
 		{
 			"create existing product", &domain.Product{
-				ID:          1,
+				Code:        "1",
 				Name:        "Arroz-branco",
 				Description: "Comida",
 				Price:       2,
@@ -129,7 +129,7 @@ func TestCreateProduct(t *testing.T) {
 		{"empty product", &domain.Product{}, ErrProductIsEmpty},
 		{
 			"invalid price", &domain.Product{
-				ID:          20,
+				Code:        "20",
 				Name:        "Carne",
 				Description: "Comida",
 				Price:       -2.5,

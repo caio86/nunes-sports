@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strconv"
+
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
 	"github.com/caio86/nunes-sports/backend/internal/core/ports"
 )
@@ -11,6 +13,7 @@ const (
 	ErrProductInvalidPagination   = ProductServiceErr("invalid pagination")
 	ErrProductIsEmpty             = ProductServiceErr("empty product received")
 	ErrProductIDRequired          = ProductServiceErr("product ID is required")
+	ErrProductIDInvalid           = ProductServiceErr("product ID is invalid")
 	ErrProductNameRequired        = ProductServiceErr("product name is required")
 	ErrProductDescriptionRequired = ProductServiceErr("product description is required")
 	ErrProductPriceInvalid        = ProductServiceErr("product price must be greater than zero")
@@ -83,6 +86,10 @@ func validateProduct(product *domain.Product) error {
 
 	if product.ID == "" {
 		return ErrProductIDRequired
+	}
+
+	if _, err := strconv.Atoi(product.ID); err != nil {
+		return ErrProductIDInvalid
 	}
 
 	if product.Name == "" {

@@ -10,6 +10,7 @@ type ProductServiceErr string
 const (
 	ErrProductInvalidPagination   = ProductServiceErr("invalid pagination")
 	ErrProductIsEmpty             = ProductServiceErr("empty product received")
+	ErrProductIDRequired          = ProductServiceErr("product ID is required")
 	ErrProductNameRequired        = ProductServiceErr("product name is required")
 	ErrProductDescriptionRequired = ProductServiceErr("product description is required")
 	ErrProductPriceInvalid        = ProductServiceErr("product price must be greater than zero")
@@ -32,7 +33,7 @@ func NewProductService(repo ports.ProductRepository) *ProductService {
 }
 
 func (s *ProductService) GetProducts(page_index, page_size int) ([]*domain.Product, int64, error) {
-	if page_index < 0 || page_size <= 0 {
+	if page_index < 0 || page_size < 0 {
 		return nil, 0, ErrProductInvalidPagination
 	}
 
@@ -80,7 +81,9 @@ func validateProduct(product *domain.Product) error {
 		return ErrProductIsEmpty
 	}
 
-	// Add validation for id
+	if product.ID == "" {
+		return ErrProductIDRequired
+	}
 
 	if product.Name == "" {
 		return ErrProductNameRequired

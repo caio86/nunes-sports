@@ -22,13 +22,12 @@ func (r *productRepository) Find(page, limit int) ([]*domain.Product, int64, err
 	var total int64
 	var result *gorm.DB
 
-	offset := (page - 1) * limit
-
 	r.db.Model(&domain.Product{}).Count(&total)
 
 	if limit == 0 {
 		result = r.db.Find(&products)
 	} else {
+		offset := (page - 1) * limit
 		result = r.db.
 			Limit(limit).
 			Offset(offset).

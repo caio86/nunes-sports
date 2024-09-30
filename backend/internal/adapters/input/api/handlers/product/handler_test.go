@@ -16,6 +16,9 @@ func TestGet(t *testing.T) {
 	svc := mocks.NewProductService()
 	handler := New(svc)
 
+	router := http.NewServeMux()
+	router.HandleFunc("GET /product", handler.Get)
+
 	expectedProduct := []*domain.Product{
 		{ID: "1", Name: "Arroz", Description: "Branco", Price: 6.49},
 		{ID: "2", Name: "Carne", Description: "Cupim", Price: 49.99},
@@ -36,7 +39,7 @@ func TestGet(t *testing.T) {
 		req := newGetRequest(1, 2)
 		res := httptest.NewRecorder()
 
-		handler.Get(res, req)
+		router.ServeHTTP(res, req)
 
 		var got []*domain.Product
 		json.NewDecoder(res.Body).Decode(&got)
@@ -49,7 +52,7 @@ func TestGet(t *testing.T) {
 		req := newGetRequest(2, 2)
 		res := httptest.NewRecorder()
 
-		handler.Get(res, req)
+		router.ServeHTTP(res, req)
 
 		var got []*domain.Product
 		json.NewDecoder(res.Body).Decode(&got)
@@ -62,7 +65,7 @@ func TestGet(t *testing.T) {
 		req := newGetRequest(0, 0)
 		res := httptest.NewRecorder()
 
-		handler.Get(res, req)
+		router.ServeHTTP(res, req)
 
 		var got []*domain.Product
 		json.NewDecoder(res.Body).Decode(&got)
@@ -75,7 +78,7 @@ func TestGet(t *testing.T) {
 		req := newGetRequest("a", 0)
 		res := httptest.NewRecorder()
 
-		handler.Get(res, req)
+		router.ServeHTTP(res, req)
 
 		got := res.Body.String()
 
@@ -87,7 +90,7 @@ func TestGet(t *testing.T) {
 		req := newGetRequest(0, "a")
 		res := httptest.NewRecorder()
 
-		handler.Get(res, req)
+		router.ServeHTTP(res, req)
 
 		got := res.Body.String()
 

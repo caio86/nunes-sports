@@ -20,7 +20,7 @@ func NewMockProductRepo() *MockProductRepo {
 func (m *MockProductRepo) Find(offset, limit int) ([]*domain.Product, int64, error) {
 	result := make([]*domain.Product, 0)
 
-	start := offset * limit
+	start := (offset - 1) * limit
 	end := start + limit
 
 	total := int64(len(m.products))
@@ -82,9 +82,9 @@ func TestGetProducts(t *testing.T) {
 		page_size      int
 		expectedResult []*domain.Product
 	}{
-		{"get all five", 0, 5, products[:5]},
-		{"get first two", 0, 2, products[:2]},
-		{"get second two", 1, 2, products[2:4]},
+		{"get all five", 1, 5, products[:5]},
+		{"get first two", 1, 2, products[:2]},
+		{"get second two", 2, 2, products[2:4]},
 	}
 
 	svc, _ := setupService(t, products)

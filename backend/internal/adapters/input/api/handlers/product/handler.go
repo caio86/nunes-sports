@@ -21,14 +21,14 @@ func New(service ports.ProductService) *Handler {
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
-	var pageIndex int
+	var pageNumber int
 	var pageSize int
 	var err error
 
 	if res := queryParams.Get("page"); res == "" {
-		pageIndex = 0
+		pageNumber = 1
 	} else {
-		pageIndex, err = strconv.Atoi(res)
+		pageNumber, err = strconv.Atoi(res)
 		if err != nil {
 			http.Error(w, "Invalid page param", http.StatusBadRequest)
 			return
@@ -45,7 +45,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, _, err := h.svc.GetProducts(pageIndex, pageSize)
+	data, _, err := h.svc.GetProducts(pageNumber, pageSize)
 	if err != nil {
 		log.Printf("Failed to get products %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

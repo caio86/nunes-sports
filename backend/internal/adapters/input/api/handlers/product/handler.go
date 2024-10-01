@@ -101,7 +101,28 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := renderJSON(w, http.StatusOK, data); err != nil {
+	res := dto.GetProductByIDResponse{
+		Data: dto.ProductResponse{
+			ID:          data.ID,
+			Name:        data.Name,
+			Description: data.Description,
+			Price:       data.Price,
+		},
+		Links: []dto.LinkDTO{
+			{
+				Rel:    "self",
+				Href:   "/product/" + id,
+				Method: http.MethodGet,
+			},
+			{
+				Rel:    "self",
+				Href:   "/product/" + id,
+				Method: http.MethodDelete,
+			},
+		},
+	}
+
+	if err := renderJSON(w, http.StatusOK, res); err != nil {
 		return
 	}
 }

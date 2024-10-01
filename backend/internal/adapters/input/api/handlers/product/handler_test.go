@@ -12,6 +12,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var products = []*domain.Product{
+	{ID: "1", Name: "Arroz", Description: "Branco", Price: 6.49},
+	{ID: "2", Name: "Carne", Description: "Cupim", Price: 49.99},
+	{ID: "3", Name: "Feijão", Description: "Preto", Price: 6.49},
+	{ID: "4", Name: "Café", Description: "Grãos", Price: 20.49},
+}
+
 func TestGet(t *testing.T) {
 	svc := mocks.NewProductService()
 	handler := New(svc)
@@ -19,21 +26,14 @@ func TestGet(t *testing.T) {
 	router := http.NewServeMux()
 	router.HandleFunc("GET /product", handler.Get)
 
-	expectedProduct := []*domain.Product{
-		{ID: "1", Name: "Arroz", Description: "Branco", Price: 6.49},
-		{ID: "2", Name: "Carne", Description: "Cupim", Price: 49.99},
-		{ID: "3", Name: "Feijão", Description: "Preto", Price: 6.49},
-		{ID: "4", Name: "Café", Description: "Grãos", Price: 20.49},
-	}
-
 	svc.On("GetProducts", 1, 2).
-		Return(expectedProduct[0:2], int64(len(expectedProduct)), nil)
+		Return(products[0:2], int64(len(products)), nil)
 
 	svc.On("GetProducts", 2, 2).
-		Return(expectedProduct[2:4], int64(len(expectedProduct)), nil)
+		Return(products[2:4], int64(len(products)), nil)
 
 	svc.On("GetProducts", 0, 0).
-		Return(expectedProduct, int64(len(expectedProduct)), nil)
+		Return(products, int64(len(products)), nil)
 
 	t.Run("get first page", func(t *testing.T) {
 		req := newGetRequest(1, 2)
@@ -45,7 +45,7 @@ func TestGet(t *testing.T) {
 		json.NewDecoder(res.Body).Decode(&got)
 
 		assert.Equal(t, http.StatusOK, res.Code)
-		assert.Equal(t, expectedProduct[0:2], got)
+		assert.Equal(t, products[0:2], got)
 	})
 
 	t.Run("get second page", func(t *testing.T) {
@@ -58,7 +58,7 @@ func TestGet(t *testing.T) {
 		json.NewDecoder(res.Body).Decode(&got)
 
 		assert.Equal(t, http.StatusOK, res.Code)
-		assert.Equal(t, expectedProduct[2:4], got)
+		assert.Equal(t, products[2:4], got)
 	})
 
 	t.Run("get all", func(t *testing.T) {
@@ -71,7 +71,7 @@ func TestGet(t *testing.T) {
 		json.NewDecoder(res.Body).Decode(&got)
 
 		assert.Equal(t, http.StatusOK, res.Code)
-		assert.Equal(t, expectedProduct, got)
+		assert.Equal(t, products, got)
 	})
 
 	t.Run("invalid page parameter", func(t *testing.T) {
@@ -100,7 +100,7 @@ func TestGet(t *testing.T) {
 }
 
 func newGetRequest(page, limit interface{}) *http.Request {
-	url := fmt.Sprintf("/products?page=%v&limit=%v", page, limit)
+	url := fmt.Sprintf("/product?page=%v&limit=%v", page, limit)
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
 	return req
 }

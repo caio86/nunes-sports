@@ -1,6 +1,7 @@
 package product
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -160,6 +161,36 @@ func TestGetByID(t *testing.T) {
 	})
 }
 
+func TestCreate(t *testing.T) {
+	svc := mocks.NewProductService()
+	handler := New(svc)
+
+	router := http.NewServeMux()
+	router.HandleFunc("POST /product", handler.Create)
+
+	product := &domain.Product{
+		ID:          "10",
+		Name:        "Teste",
+		Description: "Vazio",
+		Price:       0.00,
+	}
+
+	svc.On("CreateProduct", product).
+		Return(product, nil)
+
+	req := newCreateRequest(product)
+	res := httptest.NewRecorder()
+
+	router.ServeHTTP(res, req)
+
+	var got dto.ProductResponse
+	json.NewDecoder(res.Body).Decode(&got)
+
+	assert.Equal(t, http.StatusCreated, res.Code)
+	assert.Equal(t, product.Name, got.Name)
+	assert.NotEmpty(t, got.ID)
+}
+
 func parseResponse(t *testing.T, got []dto.ProductResponse) []*domain.Product {
 	t.Helper()
 
@@ -184,5 +215,15 @@ func newGetRequest(page, limit interface{}) *http.Request {
 func newGetByIDRequest(id any) *http.Request {
 	url := fmt.Sprintf("/product/%v", id)
 	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	return req
+}
+
+func newCreateRequest(data interface{}) *http.Request {
+	out, _ := json.Marshal(data)
+	req, _ := http.NewRequest(
+		http.MethodPost,
+		"/product",
+		bytes.NewBuffer(out),
+	)
 	return req
 }

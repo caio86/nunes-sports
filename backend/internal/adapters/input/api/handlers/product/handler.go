@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/caio86/nunes-sports/backend/internal/adapters/input/api/dto"
+	"github.com/caio86/nunes-sports/backend/internal/core/domain"
 	"github.com/caio86/nunes-sports/backend/internal/core/ports"
 	"github.com/caio86/nunes-sports/backend/internal/core/service"
 )
@@ -125,6 +126,36 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 	if err := renderJSON(w, http.StatusOK, res); err != nil {
 		return
 	}
+}
+
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
+	var body dto.ProductResponse
+	if err := decodeJSON(w, r, &body); err != nil {
+		log.Println(err)
+		return
+	}
+
+	domain := &domain.Product{
+		ID:          body.ID,
+		Name:        body.Name,
+		Description: body.Description,
+		Price:       body.Price,
+	}
+
+	product, err := h.svc.CreateProduct(domain)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	res := dto.ProductResponse{
+		ID:          product.ID,
+		Name:        product.Name,
+		Description: product.Description,
+		Price:       product.Price,
+	}
+
+	renderJSON(w, http.StatusCreated, res)
 }
 
 func renderJSON(w http.ResponseWriter, statusCode int, v any) error {

@@ -2,10 +2,12 @@ package product
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 
+	"github.com/caio86/nunes-sports/backend/internal/adapters/input/api/dto"
 	"github.com/caio86/nunes-sports/backend/internal/core/ports"
 	"github.com/caio86/nunes-sports/backend/internal/core/service"
 )
@@ -46,14 +48,39 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, _, err := h.svc.GetProducts(pageNumber, pageSize)
+	data, total, err := h.svc.GetProducts(pageNumber, pageSize)
 	if err != nil {
 		log.Printf("Failed to get products: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	if err := renderJSON(w, http.StatusOK, data); err != nil {
+	nextPage := pageNumber + 1
+	previousPage := pageNumber - 1
+	if previousPage <= 0 {
+		previousPage = 1
+	}
+
+	links := dto.PaginationLinks{
+		Next:     fmt.Sprintf("%s?page=%d&limit=%d", r.URL.Path, nextPage, pageSize),
+		Previous: fmt.Sprintf("%s?page=%d&limit=%d", r.URL.Path, previousPage, pageSize),
+	}
+
+	res := dto.GetProductsResponse{
+		Data:  make([]dto.ProductResponse, len(data)),
+		Page:  pageNumber,
+		Limit: pageSize,
+		Total: total,
+		Links: links,
+	}
+	for i, v := range data {
+		res.Data[i].ID = v.ID
+		res.Data[i].Name = v.Name
+		res.Data[i].Description = v.Description
+		res.Data[i].Price = v.Price
+	}
+
+	if err := renderJSON(w, http.StatusOK, res); err != nil {
 		return
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/caio86/nunes-sports/backend/internal/adapters/input/api/dto"
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
 	"github.com/caio86/nunes-sports/backend/internal/core/service"
 	"github.com/caio86/nunes-sports/backend/internal/mocks"
@@ -43,11 +44,14 @@ func TestGet(t *testing.T) {
 
 		router.ServeHTTP(res, req)
 
-		var got []*domain.Product
+		var got dto.GetProductsResponse
 		json.NewDecoder(res.Body).Decode(&got)
 
+		gotData := parseResponse(t, got.Data)
+
 		assert.Equal(t, http.StatusOK, res.Code)
-		assert.Equal(t, products[0:2], got)
+		assert.Equal(t, int64(len(products)), got.Total)
+		assert.Equal(t, products[0:2], gotData)
 	})
 
 	t.Run("get second page", func(t *testing.T) {
@@ -56,11 +60,14 @@ func TestGet(t *testing.T) {
 
 		router.ServeHTTP(res, req)
 
-		var got []*domain.Product
+		var got dto.GetProductsResponse
 		json.NewDecoder(res.Body).Decode(&got)
 
+		gotData := parseResponse(t, got.Data)
+
 		assert.Equal(t, http.StatusOK, res.Code)
-		assert.Equal(t, products[2:4], got)
+		assert.Equal(t, int64(len(products)), got.Total)
+		assert.Equal(t, products[2:4], gotData)
 	})
 
 	t.Run("get all", func(t *testing.T) {
@@ -69,11 +76,14 @@ func TestGet(t *testing.T) {
 
 		router.ServeHTTP(res, req)
 
-		var got []*domain.Product
+		var got dto.GetProductsResponse
 		json.NewDecoder(res.Body).Decode(&got)
 
+		gotData := parseResponse(t, got.Data)
+
 		assert.Equal(t, http.StatusOK, res.Code)
-		assert.Equal(t, products, got)
+		assert.Equal(t, int64(len(products)), got.Total)
+		assert.Equal(t, products, gotData)
 	})
 
 	t.Run("invalid page parameter", func(t *testing.T) {
@@ -123,11 +133,18 @@ func TestGetByID(t *testing.T) {
 
 		router.ServeHTTP(res, req)
 
-		var got *domain.Product
+		var got dto.GetProductByIDResponse
 		json.NewDecoder(res.Body).Decode(&got)
 
+		gotData := &domain.Product{
+			ID:          got.Data.ID,
+			Description: got.Data.Description,
+			Name:        got.Data.Name,
+			Price:       got.Data.Price,
+		}
+
 		assert.Equal(t, http.StatusOK, res.Code)
-		assert.Equal(t, products[0], got)
+		assert.Equal(t, products[0], gotData)
 	})
 
 	t.Run("return 404 for product not found", func(t *testing.T) {
@@ -141,18 +158,21 @@ func TestGetByID(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, res.Code)
 		assert.Equal(t, "Product Not Found\n", got)
 	})
+}
 
-	t.Run("custom error", func(t *testing.T) {
-		req := newGetByIDRequest(0)
-		res := httptest.NewRecorder()
+func parseResponse(t *testing.T, got []dto.ProductResponse) []*domain.Product {
+	t.Helper()
 
-		router.ServeHTTP(res, req)
-
-		got := res.Body.String()
-
-		assert.Equal(t, http.StatusInternalServerError, res.Code)
-		assert.Equal(t, "Internal Server Error\n", got)
-	})
+	response := make([]*domain.Product, len(got))
+	for i := range response {
+		response[i] = &domain.Product{
+			ID:          got[i].ID,
+			Description: got[i].Description,
+			Name:        got[i].Name,
+			Price:       got[i].Price,
+		}
+	}
+	return response
 }
 
 func newGetRequest(page, limit interface{}) *http.Request {

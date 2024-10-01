@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/caio86/nunes-sports/backend/internal/core/ports"
+	"github.com/caio86/nunes-sports/backend/internal/core/service"
 )
 
 type Handler struct {
@@ -47,7 +48,28 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 
 	data, _, err := h.svc.GetProducts(pageNumber, pageSize)
 	if err != nil {
-		log.Printf("Failed to get products %v", err)
+		log.Printf("Failed to get products: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := renderJSON(w, http.StatusOK, data); err != nil {
+		return
+	}
+}
+
+func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	data, err := h.svc.GetProductByID(id)
+	switch err {
+	case service.ErrProductNotFound:
+		http.Error(w, "Product Not Found", http.StatusNotFound)
+		return
+	case nil:
+		break
+	default:
+		log.Printf("Failed to get product: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -61,7 +83,7 @@ func renderJSON(w http.ResponseWriter, statusCode int, v any) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	if err := json.NewEncoder(w).Encode(v); err != nil {
-		log.Printf("Failed to send response %v", err)
+		log.Printf("Failed to send response: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return err
 	}

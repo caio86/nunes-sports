@@ -8,25 +8,20 @@ type ProductResponse struct {
 }
 
 type GetProductsResponse struct {
-	Data  []ProductResponse `json:"data"`
-	Page  int               `json:"_page"`
-	Limit int               `json:"_limit"`
-	Total int64             `json:"_total"`
-	Links PaginationLinks   `json:"_links"`
+	Products []ProductResponse `json:"products"`
+	Page     int               `json:"_page"`
+	Limit    int               `json:"_limit"`
+	Total    int64             `json:"_total"`
 }
 
 type GetProductByIDResponse struct {
-	Data  ProductResponse `json:"data"`
-	Links []LinkDTO       `json:"_links"`
+	ProductResponse
 }
 
-type LinkDTO struct {
-	Rel    string `json:"rel"`
-	Href   string `json:"href"`
-	Method string `json:"method"`
+type CreateProductRequest struct {
+	ProductResponse
 }
 
-type PaginationLinks struct {
-	Next     string `json:"next"`
-	Previous string `json:"previous"`
+type CreateProductResponse struct {
+	ProductResponse
 }

@@ -2,7 +2,6 @@ package product
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -56,29 +55,17 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nextPage := pageNumber + 1
-	previousPage := pageNumber - 1
-	if previousPage <= 0 {
-		previousPage = 1
-	}
-
-	links := dto.PaginationLinks{
-		Next:     fmt.Sprintf("%s?page=%d&limit=%d", r.URL.Path, nextPage, pageSize),
-		Previous: fmt.Sprintf("%s?page=%d&limit=%d", r.URL.Path, previousPage, pageSize),
-	}
-
 	res := dto.GetProductsResponse{
-		Data:  make([]dto.ProductResponse, len(data)),
-		Page:  pageNumber,
-		Limit: pageSize,
-		Total: total,
-		Links: links,
+		Products: make([]dto.ProductResponse, len(data)),
+		Page:     pageNumber,
+		Limit:    pageSize,
+		Total:    total,
 	}
 	for i, v := range data {
-		res.Data[i].ID = v.ID
-		res.Data[i].Name = v.Name
-		res.Data[i].Description = v.Description
-		res.Data[i].Price = v.Price
+		res.Products[i].ID = v.ID
+		res.Products[i].Name = v.Name
+		res.Products[i].Description = v.Description
+		res.Products[i].Price = v.Price
 	}
 
 	if err := renderJSON(w, http.StatusOK, res); err != nil {
@@ -103,23 +90,11 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := dto.GetProductByIDResponse{
-		Data: dto.ProductResponse{
+		ProductResponse: dto.ProductResponse{
 			ID:          data.ID,
 			Name:        data.Name,
 			Description: data.Description,
 			Price:       data.Price,
-		},
-		Links: []dto.LinkDTO{
-			{
-				Rel:    "self",
-				Href:   "/product/" + id,
-				Method: http.MethodGet,
-			},
-			{
-				Rel:    "self",
-				Href:   "/product/" + id,
-				Method: http.MethodDelete,
-			},
 		},
 	}
 
@@ -129,7 +104,7 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	var body dto.ProductResponse
+	var body dto.CreateProductRequest
 	if err := decodeJSON(w, r, &body); err != nil {
 		log.Println(err)
 		return
@@ -148,11 +123,13 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := dto.ProductResponse{
-		ID:          product.ID,
-		Name:        product.Name,
-		Description: product.Description,
-		Price:       product.Price,
+	res := dto.CreateProductResponse{
+		ProductResponse: dto.ProductResponse{
+			ID:          product.ID,
+			Name:        product.Name,
+			Description: product.Description,
+			Price:       product.Price,
+		},
 	}
 
 	renderJSON(w, http.StatusCreated, res)

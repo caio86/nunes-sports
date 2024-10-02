@@ -48,7 +48,7 @@ func TestGet(t *testing.T) {
 		var got dto.GetProductsResponse
 		json.NewDecoder(res.Body).Decode(&got)
 
-		gotData := parseResponse(t, got.Data)
+		gotData := parseResponse(t, got.Products)
 
 		assert.Equal(t, http.StatusOK, res.Code)
 		assert.Equal(t, int64(len(products)), got.Total)
@@ -64,7 +64,7 @@ func TestGet(t *testing.T) {
 		var got dto.GetProductsResponse
 		json.NewDecoder(res.Body).Decode(&got)
 
-		gotData := parseResponse(t, got.Data)
+		gotData := parseResponse(t, got.Products)
 
 		assert.Equal(t, http.StatusOK, res.Code)
 		assert.Equal(t, int64(len(products)), got.Total)
@@ -80,7 +80,7 @@ func TestGet(t *testing.T) {
 		var got dto.GetProductsResponse
 		json.NewDecoder(res.Body).Decode(&got)
 
-		gotData := parseResponse(t, got.Data)
+		gotData := parseResponse(t, got.Products)
 
 		assert.Equal(t, http.StatusOK, res.Code)
 		assert.Equal(t, int64(len(products)), got.Total)
@@ -138,10 +138,10 @@ func TestGetByID(t *testing.T) {
 		json.NewDecoder(res.Body).Decode(&got)
 
 		gotData := &domain.Product{
-			ID:          got.Data.ID,
-			Description: got.Data.Description,
-			Name:        got.Data.Name,
-			Price:       got.Data.Price,
+			ID:          got.ID,
+			Description: got.Description,
+			Name:        got.Name,
+			Price:       got.Price,
 		}
 
 		assert.Equal(t, http.StatusOK, res.Code)

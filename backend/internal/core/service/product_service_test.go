@@ -5,67 +5,8 @@ import (
 	"testing"
 
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
+	"github.com/caio86/nunes-sports/backend/internal/mocks"
 )
-
-type MockProductRepo struct {
-	products []*domain.Product
-}
-
-func NewMockProductRepo() *MockProductRepo {
-	return &MockProductRepo{
-		products: make([]*domain.Product, 0),
-	}
-}
-
-func (m *MockProductRepo) Find(offset, limit int) ([]*domain.Product, int64, error) {
-	result := make([]*domain.Product, 0)
-
-	start := (offset - 1) * limit
-	end := start + limit
-
-	total := int64(len(m.products))
-
-	result = m.products[start:end]
-
-	return result, total, nil
-}
-
-func (m *MockProductRepo) FindByID(id string) (*domain.Product, error) {
-	for _, value := range m.products {
-		if value.ID == id {
-			return value, nil
-		}
-	}
-
-	return nil, ErrProductNotFound
-}
-
-func (m *MockProductRepo) Save(product *domain.Product) (*domain.Product, error) {
-	m.products = append(m.products, product)
-	return product, nil
-}
-
-func (m *MockProductRepo) Update(product *domain.Product) (*domain.Product, error) {
-	for i, v := range m.products {
-		if v.ID == product.ID {
-			m.products[i] = product
-			return product, nil
-		}
-	}
-
-	return nil, ErrProductNotFound
-}
-
-func (m *MockProductRepo) Delete(id string) error {
-	for i, v := range m.products {
-		if v.ID == id {
-			m.products[i] = m.products[len(m.products)-1]
-			m.products = m.products[:len(m.products)-1]
-		}
-	}
-
-	return ErrProductNotFound
-}
 
 var products = []*domain.Product{
 	{ID: "1", Name: "Arroz", Description: "Comida", Price: 6.00},
@@ -87,7 +28,17 @@ func TestGetProducts(t *testing.T) {
 		{"get second two", 2, 2, products[2:4]},
 	}
 
-	svc, _ := setupService(t, products)
+	repo := mocks.NewProductRepo()
+	svc := NewProductService(repo)
+
+	repo.On("Find", 1, 5).
+		Return(products, int64(5), nil)
+
+	repo.On("Find", 1, 2).
+		Return(products[:2], int64(5), nil)
+
+	repo.On("Find", 2, 2).
+		Return(products[2:4], int64(5), nil)
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -115,7 +66,13 @@ func TestGetProductByID(t *testing.T) {
 		{"product does not exist", "20", ErrProductNotFound},
 	}
 
-	svc, _ := setupService(t, products)
+	repo := mocks.NewProductRepo()
+	svc := NewProductService(repo)
+
+	repo.On("FindByID", "1").
+		Return(products[0], nil)
+	repo.On("FindByID", "20").
+		Return(products[0], ErrProductNotFound)
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -165,7 +122,15 @@ func TestCreateProduct(t *testing.T) {
 		},
 	}
 
-	svc, _ := setupService(t, products)
+	repo := mocks.NewProductRepo()
+	svc := NewProductService(repo)
+
+	repo.On("FindByID", "1").
+		Return(products[0], nil)
+	repo.On("FindByID", "10").
+		Return(&domain.Product{}, ErrProductNotFound)
+	repo.On("Save", testCases[0].product).
+		Return(testCases[0].product, nil)
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -183,14 +148,6 @@ func TestCreateProduct(t *testing.T) {
 }
 
 // Helper functions
-
-func setupService(t *testing.T, products []*domain.Product) (*ProductService, *MockProductRepo) {
-	t.Helper()
-	repo := NewMockProductRepo()
-	svc := NewProductService(repo)
-	repo.products = products
-	return svc, repo
-}
 
 func assertNotNil(t *testing.T, got *domain.Product) {
 	t.Helper()

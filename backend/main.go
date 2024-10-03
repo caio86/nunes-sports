@@ -4,22 +4,26 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/caio86/nunes-sports/backend/internal/adapters/input/api/handlers/product"
 	"github.com/caio86/nunes-sports/backend/internal/adapters/output/database"
 	"github.com/caio86/nunes-sports/backend/internal/core/service"
 	"github.com/caio86/nunes-sports/backend/internal/middleware"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
 func main() {
-	host := "localhost"
-	port := "5432"
-	user := "postgres"
-	dbname := "db"
-	password := "123"
+	godotenv.Load()
+
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	user := os.Getenv("DB_USER")
+	dbname := os.Getenv("DB_NAME")
+	password := os.Getenv("DB_PASS")
 
 	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
 		host,

@@ -1,0 +1,45 @@
+services:
+  backend:
+    image: nunes-sport
+    container_name: nunes-sport
+    restart: always
+    ports:
+      - 8080:8080
+    secrets:
+      - db-password
+    environment:
+      - DB_HOST=db
+      - DB_PASS=123
+      - DB_NAME=nunes-sport
+      - DB_USER=postgres
+      - DB_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres
+    restart: always
+    user: postgres
+    secrets:
+      - db-password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=nunes-sport
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:
+secrets:
+  db-password:
+    file: db/password

@@ -1,3 +1,3 @@
 export const environment = {
-  api: "Teste"
+  api: "api/v1"
 };

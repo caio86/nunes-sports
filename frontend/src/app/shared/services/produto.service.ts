@@ -17,4 +17,16 @@ export class ProdutoService {
   listar(): Observable<GetProdutosResponseDTO> {
     return this.clienteHttp.get<GetProdutosResponseDTO>(this.api)
   }
+
+  listarPaginado(page: number, pageSize: number): Observable<GetProdutosResponseDTO> {
+    return this.clienteHttp.get<GetProdutosResponseDTO>(
+      `${this.api}?page=${page}&limit=${pageSize}`
+    )
+  }
+
+  inserir(novoProduto: Produto): Observable<Produto> {
+    return this.clienteHttp.post<Produto>(
+      this.api, novoProduto
+    )
+  }
 }

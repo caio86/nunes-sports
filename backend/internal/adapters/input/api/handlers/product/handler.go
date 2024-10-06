@@ -9,7 +9,6 @@ import (
 	"github.com/caio86/nunes-sports/backend/internal/adapters/input/api/dto"
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
 	"github.com/caio86/nunes-sports/backend/internal/core/ports"
-	"github.com/caio86/nunes-sports/backend/internal/core/service"
 )
 
 type Handler struct {
@@ -78,7 +77,7 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	data, err := h.svc.GetProductByID(id)
 	switch err {
-	case service.ErrProductNotFound:
+	case domain.ErrProductNotFound:
 		http.Error(w, "Product Not Found", http.StatusNotFound)
 		return
 	case nil:

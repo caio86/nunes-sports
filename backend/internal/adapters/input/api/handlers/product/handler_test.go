@@ -11,7 +11,6 @@ import (
 
 	"github.com/caio86/nunes-sports/backend/internal/adapters/input/api/dto"
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
-	"github.com/caio86/nunes-sports/backend/internal/core/service"
 	"github.com/caio86/nunes-sports/backend/internal/mocks"
 	"github.com/stretchr/testify/assert"
 )
@@ -123,7 +122,7 @@ func TestGetByID(t *testing.T) {
 		Return(products[0], nil)
 
 	svc.On("GetProductByID", "5").
-		Return(&domain.Product{}, service.ErrProductNotFound)
+		Return(&domain.Product{}, domain.ErrProductNotFound)
 
 	svc.On("GetProductByID", "0").
 		Return(&domain.Product{}, errors.New("Custom Error"))

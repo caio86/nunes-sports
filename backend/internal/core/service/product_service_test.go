@@ -63,7 +63,7 @@ func TestGetProductByID(t *testing.T) {
 		expectedErr error
 	}{
 		{"find product with id 1", "1", nil},
-		{"product does not exist", "20", ErrProductNotFound},
+		{"product does not exist", "20", domain.ErrProductNotFound},
 	}
 
 	repo := mocks.NewProductRepo()
@@ -72,7 +72,7 @@ func TestGetProductByID(t *testing.T) {
 	repo.On("FindByID", "1").
 		Return(products[0], nil)
 	repo.On("FindByID", "20").
-		Return(products[0], ErrProductNotFound)
+		Return(products[0], domain.ErrProductNotFound)
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -109,16 +109,16 @@ func TestCreateProduct(t *testing.T) {
 				Name:        "Arroz-branco",
 				Description: "Comida",
 				Price:       2,
-			}, ErrProductAlreadyExists,
+			}, domain.ErrProductAlreadyExists,
 		},
-		{"empty product", &domain.Product{}, ErrProductIsEmpty},
+		{"empty product", &domain.Product{}, domain.ErrProductIsEmpty},
 		{
 			"invalid price", &domain.Product{
 				ID:          "20",
 				Name:        "Carne",
 				Description: "Comida",
 				Price:       -2.5,
-			}, ErrProductPriceInvalid,
+			}, domain.ErrProductPriceInvalid,
 		},
 	}
 
@@ -128,7 +128,7 @@ func TestCreateProduct(t *testing.T) {
 	repo.On("FindByID", "1").
 		Return(products[0], nil)
 	repo.On("FindByID", "10").
-		Return(&domain.Product{}, ErrProductNotFound)
+		Return(&domain.Product{}, domain.ErrProductNotFound)
 	repo.On("Save", testCases[0].product).
 		Return(testCases[0].product, nil)
 

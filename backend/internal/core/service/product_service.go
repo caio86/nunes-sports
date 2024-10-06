@@ -1,29 +1,9 @@
 package service
 
 import (
-	"strconv"
-
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
 	"github.com/caio86/nunes-sports/backend/internal/core/ports"
 )
-
-type ProductServiceErr string
-
-const (
-	ErrProductInvalidPagination   = ProductServiceErr("invalid pagination")
-	ErrProductIsEmpty             = ProductServiceErr("empty product received")
-	ErrProductIDRequired          = ProductServiceErr("product ID is required")
-	ErrProductIDInvalid           = ProductServiceErr("product ID is invalid")
-	ErrProductNameRequired        = ProductServiceErr("product name is required")
-	ErrProductDescriptionRequired = ProductServiceErr("product description is required")
-	ErrProductPriceInvalid        = ProductServiceErr("product price must be greater than zero")
-	ErrProductNotFound            = ProductServiceErr("product not found")
-	ErrProductAlreadyExists       = ProductServiceErr("product already exists")
-)
-
-func (e ProductServiceErr) Error() string {
-	return string(e)
-}
 
 type ProductService struct {
 	repo ports.ProductRepository
@@ -37,7 +17,7 @@ func NewProductService(repo ports.ProductRepository) *ProductService {
 
 func (s *ProductService) GetProducts(page_index, page_size int) ([]*domain.Product, int64, error) {
 	if page_index <= 0 || page_size < 0 {
-		return nil, 0, ErrProductInvalidPagination
+		return nil, 0, domain.ErrProductInvalidPagination
 	}
 
 	products, total, err := s.repo.Find(page_index, page_size)
@@ -49,15 +29,15 @@ func (s *ProductService) GetProducts(page_index, page_size int) ([]*domain.Produ
 }
 
 func (s *ProductService) CreateProduct(product *domain.Product) (*domain.Product, error) {
-	if err := validateProduct(product); err != nil {
+	if err := product.Validate(); err != nil {
 		return nil, err
 	}
 
 	switch _, err := s.GetProductByID(product.ID); err {
-	case ErrProductNotFound:
+	case domain.ErrProductNotFound:
 		break
 	case nil:
-		return nil, ErrProductAlreadyExists
+		return nil, domain.ErrProductAlreadyExists
 	default:
 		return nil, err
 	}
@@ -73,36 +53,8 @@ func (s *ProductService) CreateProduct(product *domain.Product) (*domain.Product
 func (s *ProductService) GetProductByID(id string) (*domain.Product, error) {
 	product, err := s.repo.FindByID(id)
 	if err != nil {
-		return nil, ErrProductNotFound
+		return nil, domain.ErrProductNotFound
 	}
 
 	return product, nil
-}
-
-func validateProduct(product *domain.Product) error {
-	if *product == (domain.Product{}) {
-		return ErrProductIsEmpty
-	}
-
-	if product.ID == "" {
-		return ErrProductIDRequired
-	}
-
-	if _, err := strconv.Atoi(product.ID); err != nil {
-		return ErrProductIDInvalid
-	}
-
-	if product.Name == "" {
-		return ErrProductNameRequired
-	}
-
-	if product.Description == "" {
-		return ErrProductDescriptionRequired
-	}
-
-	if product.Price <= 0 {
-		return ErrProductPriceInvalid
-	}
-
-	return nil
 }

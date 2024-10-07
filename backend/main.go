@@ -48,6 +48,7 @@ func main() {
 	router.HandleFunc("GET /product", handler.Get)
 	router.HandleFunc("GET /product/{id}", handler.GetByID)
 	router.HandleFunc("POST /product", handler.Create)
+	router.HandleFunc("DELETE /product/{id}", handler.Delete)
 
 	apiVersion := http.NewServeMux()
 	apiVersion.Handle("/api/v1/", http.StripPrefix("/api/v1", router))

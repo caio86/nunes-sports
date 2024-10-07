@@ -134,6 +134,18 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, http.StatusCreated, res)
 }
 
+func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	err := h.svc.DeleteProduct(id)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func renderJSON(w http.ResponseWriter, statusCode int, v any) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)

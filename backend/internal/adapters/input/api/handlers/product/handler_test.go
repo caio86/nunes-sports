@@ -190,6 +190,38 @@ func TestCreate(t *testing.T) {
 	assert.NotEmpty(t, got.ID)
 }
 
+func TestDelete(t *testing.T) {
+	svc := mocks.NewProductService()
+	handler := New(svc)
+
+	router := http.NewServeMux()
+	router.HandleFunc("DELETE /product/{id}", handler.Delete)
+
+	svc.On("DeleteProduct", "1").
+		Return(nil)
+
+	svc.On("DeleteProduct", "9").
+		Return(fmt.Errorf("Test Error"))
+
+	t.Run("sucessful delete product", func(t *testing.T) {
+		req := newDeleteRequest(1)
+		res := httptest.NewRecorder()
+
+		router.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusNoContent, res.Code)
+	})
+
+	t.Run("fail delete product", func(t *testing.T) {
+		req := newDeleteRequest(9)
+		res := httptest.NewRecorder()
+
+		router.ServeHTTP(res, req)
+
+		assert.Equal(t, http.StatusInternalServerError, res.Code)
+	})
+}
+
 func parseResponse(t *testing.T, got []dto.ProductResponse) []*domain.Product {
 	t.Helper()
 
@@ -223,6 +255,16 @@ func newCreateRequest(data interface{}) *http.Request {
 		http.MethodPost,
 		"/product",
 		bytes.NewBuffer(out),
+	)
+	return req
+}
+
+func newDeleteRequest(id any) *http.Request {
+	url := fmt.Sprintf("/product/%v", id)
+	req, _ := http.NewRequest(
+		http.MethodDelete,
+		url,
+		nil,
 	)
 	return req
 }

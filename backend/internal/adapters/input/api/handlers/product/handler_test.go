@@ -190,6 +190,93 @@ func TestCreate(t *testing.T) {
 	assert.NotEmpty(t, got.ID)
 }
 
+func TestUpdate(t *testing.T) {
+	svc := mocks.NewProductService()
+	handler := New(svc)
+
+	router := http.NewServeMux()
+	router.HandleFunc("PUT /product/{id}", handler.Update)
+
+	successProduct := &domain.Product{
+		ID:          "1",
+		Name:        "Teste",
+		Description: "Vazio",
+		Price:       0.00,
+	}
+
+	invalidProduct := &domain.Product{
+		ID:          "1",
+		Name:        "",
+		Description: "",
+		Price:       0.00,
+	}
+
+	productNotExist := &domain.Product{
+		ID:          "10",
+		Name:        "Teste",
+		Description: "Vazio",
+		Price:       0.00,
+	}
+
+	svc.On("UpdateProduct", successProduct).
+		Return(successProduct, nil)
+
+	svc.On("UpdateProduct", invalidProduct).
+		Return(&domain.Product{}, domain.ErrProductNameRequired)
+
+	svc.On("UpdateProduct", productNotExist).
+		Return(&domain.Product{}, domain.ErrProductNotFound)
+
+	t.Run("successful update product", func(t *testing.T) {
+		req := newUpdateRequest(successProduct.ID, successProduct)
+		res := httptest.NewRecorder()
+
+		router.ServeHTTP(res, req)
+
+		var got dto.UpdateProductResponse
+		json.NewDecoder(res.Body).Decode(&got)
+
+		assert.Equal(t, http.StatusOK, res.Code)
+		assert.Equal(t, successProduct.Name, got.Name)
+	})
+
+	t.Run("path id different from body id", func(t *testing.T) {
+		req := newUpdateRequest(2, successProduct)
+		res := httptest.NewRecorder()
+
+		router.ServeHTTP(res, req)
+
+		got := res.Body.String()
+
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+		assert.Equal(t, "Invalid request payload\n", got)
+	})
+
+	t.Run("invalid product", func(t *testing.T) {
+		req := newUpdateRequest(invalidProduct.ID, invalidProduct)
+		res := httptest.NewRecorder()
+
+		router.ServeHTTP(res, req)
+
+		got := res.Body.String()
+
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+		assert.Equal(t, "Invalid request payload\n", got)
+	})
+
+	t.Run("product does not exists", func(t *testing.T) {
+		req := newUpdateRequest(productNotExist.ID, productNotExist)
+		res := httptest.NewRecorder()
+
+		router.ServeHTTP(res, req)
+
+		got := res.Body.String()
+
+		assert.Equal(t, http.StatusNotFound, res.Code)
+		assert.Equal(t, "Product Not Found\n", got)
+	})
+}
+
 func TestDelete(t *testing.T) {
 	svc := mocks.NewProductService()
 	handler := New(svc)
@@ -254,6 +341,17 @@ func newCreateRequest(data interface{}) *http.Request {
 	req, _ := http.NewRequest(
 		http.MethodPost,
 		"/product",
+		bytes.NewBuffer(out),
+	)
+	return req
+}
+
+func newUpdateRequest(id any, data interface{}) *http.Request {
+	url := fmt.Sprintf("/product/%v", id)
+	out, _ := json.Marshal(data)
+	req, _ := http.NewRequest(
+		http.MethodPut,
+		url,
 		bytes.NewBuffer(out),
 	)
 	return req

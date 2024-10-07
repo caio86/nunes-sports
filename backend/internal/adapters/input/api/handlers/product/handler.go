@@ -134,6 +134,51 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	renderJSON(w, http.StatusCreated, res)
 }
 
+func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	var body dto.CreateProductRequest
+	if err := decodeJSON(w, r, &body); err != nil {
+		log.Println(err)
+		return
+	}
+	if id != body.ID {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	domainProduct := &domain.Product{
+		ID:          body.ID,
+		Name:        body.Name,
+		Description: body.Description,
+		Price:       body.Price,
+	}
+
+	product, err := h.svc.UpdateProduct(domainProduct)
+	if err == domain.ErrProductNotFound {
+		http.Error(w, "Product Not Found", http.StatusNotFound)
+		return
+	}
+	if _, ok := err.(domain.ProductErr); ok {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	res := dto.UpdateProductResponse{
+		ProductResponse: dto.ProductResponse{
+			ID:          product.ID,
+			Name:        product.Name,
+			Description: product.Description,
+			Price:       product.Price,
+		},
+	}
+
+	renderJSON(w, http.StatusOK, res)
+}
+
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 

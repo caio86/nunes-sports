@@ -64,11 +64,6 @@ func (r *productRepository) Save(product *domain.Product) (*domain.Product, erro
 }
 
 func (r *productRepository) Update(product *domain.Product) (*domain.Product, error) {
-	_, err := r.FindByID(product.ID)
-	if err != nil {
-		return nil, err
-	}
-
 	result := r.db.Save(product)
 
 	if result.Error != nil {

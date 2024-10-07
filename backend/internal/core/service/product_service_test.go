@@ -147,7 +147,64 @@ func TestCreateProduct(t *testing.T) {
 	}
 }
 
-func TestDelete(t *testing.T) {
+func TestUpdateProduct(t *testing.T) {
+	repo := mocks.NewProductRepo()
+	svc := NewProductService(repo)
+
+	successProduct := &domain.Product{
+		ID:          "1",
+		Name:        "newName",
+		Description: "newDesc",
+		Price:       9.99,
+	}
+
+	productNotExist := &domain.Product{
+		ID:          "9",
+		Name:        "newName",
+		Description: "newDesc",
+		Price:       9.99,
+	}
+
+	invalidProduct := &domain.Product{
+		ID:          "1",
+		Name:        "",
+		Description: "",
+		Price:       9.99,
+	}
+
+	repo.On("FindByID", successProduct.ID).
+		Return(successProduct, nil)
+	repo.On("Update", successProduct).
+		Return(successProduct, nil)
+
+	repo.On("FindByID", productNotExist.ID).
+		Return(&domain.Product{}, domain.ErrProductNotFound)
+
+	t.Run("update product", func(t *testing.T) {
+		got, err := svc.UpdateProduct(successProduct)
+
+		assertNoError(t, err)
+		if got != successProduct {
+			t.Errorf("got %v, want %v", got, successProduct)
+		}
+	})
+
+	t.Run("product does not exists", func(t *testing.T) {
+		got, err := svc.UpdateProduct(productNotExist)
+
+		assertError(t, err, domain.ErrProductNotFound)
+		assertNil(t, got)
+	})
+
+	t.Run("invalid product", func(t *testing.T) {
+		got, err := svc.UpdateProduct(invalidProduct)
+
+		assertError(t, err, domain.ErrProductNameRequired)
+		assertNil(t, got)
+	})
+}
+
+func TestDeleteProduct(t *testing.T) {
 	repo := mocks.NewProductRepo()
 	svc := NewProductService(repo)
 

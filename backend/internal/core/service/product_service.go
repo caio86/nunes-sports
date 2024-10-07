@@ -59,6 +59,23 @@ func (s *ProductService) GetProductByID(id string) (*domain.Product, error) {
 	return product, nil
 }
 
+func (s *ProductService) UpdateProduct(product *domain.Product) (*domain.Product, error) {
+	if err := product.Validate(); err != nil {
+		return nil, err
+	}
+
+	_, err := s.GetProductByID(product.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	got, err := s.repo.Update(product)
+	if err != nil {
+		return nil, err
+	}
+	return got, nil
+}
+
 func (s *ProductService) DeleteProduct(id string) error {
 	if _, err := s.GetProductByID(id); err != nil {
 		return err

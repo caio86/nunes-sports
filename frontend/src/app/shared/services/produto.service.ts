@@ -24,9 +24,28 @@ export class ProdutoService {
     )
   }
 
+  pesquisarPorID(id: number): Observable<Produto> {
+    return this.clienteHttp.get<Produto>(
+      `${this.api}/${id}`
+    )
+  }
+
   inserir(novoProduto: Produto): Observable<Produto> {
     return this.clienteHttp.post<Produto>(
       this.api, novoProduto
+    )
+  }
+
+  deletar(id: number): Observable<Object> {
+    return this.clienteHttp.delete(
+      `${this.api}/${id}`
+    )
+  }
+
+  atualizar(produto: Produto): Observable<Produto> {
+    return this.clienteHttp.put<Produto>(
+      `${this.api}/${produto.id}`,
+      produto
     )
   }
 }

@@ -147,6 +147,33 @@ func TestCreateProduct(t *testing.T) {
 	}
 }
 
+func TestDelete(t *testing.T) {
+	repo := mocks.NewProductRepo()
+	svc := NewProductService(repo)
+
+	repo.On("FindByID", "1").
+		Return(products[0], nil)
+
+	repo.On("Delete", "1").
+		Return(nil)
+
+	repo.On("FindByID", "9").
+		Return(products[0], domain.ErrProductNotFound)
+
+	repo.On("Delete", "9").
+		Return(domain.ErrProductNotFound)
+
+	t.Run("delete existing item", func(t *testing.T) {
+		err := svc.DeleteProduct("1")
+		assertNoError(t, err)
+	})
+
+	t.Run("delete non existing item", func(t *testing.T) {
+		err := svc.DeleteProduct("9")
+		assertError(t, err, domain.ErrProductNotFound)
+	})
+}
+
 // Helper functions
 
 func assertNotNil(t *testing.T, got *domain.Product) {

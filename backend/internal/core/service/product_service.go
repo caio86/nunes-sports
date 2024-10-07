@@ -58,3 +58,15 @@ func (s *ProductService) GetProductByID(id string) (*domain.Product, error) {
 
 	return product, nil
 }
+
+func (s *ProductService) DeleteProduct(id string) error {
+	if _, err := s.GetProductByID(id); err != nil {
+		return err
+	}
+
+	if err := s.repo.Delete(id); err != nil {
+		return err
+	}
+
+	return nil
+}

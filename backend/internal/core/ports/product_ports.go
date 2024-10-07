@@ -16,4 +16,5 @@ type ProductService interface {
 	GetProducts(page_index, page_size int) ([]*domain.Product, int64, error)
 	GetProductByID(id string) (*domain.Product, error)
 	CreateProduct(product *domain.Product) (*domain.Product, error)
+	DeleteProduct(id string) error
 }

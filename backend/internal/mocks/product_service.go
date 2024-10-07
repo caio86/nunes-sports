@@ -27,3 +27,8 @@ func (m *productService) CreateProduct(product *domain.Product) (*domain.Product
 	args := m.Called(product)
 	return args.Get(0).(*domain.Product), args.Error(1)
 }
+
+func (m *productService) DeleteProduct(id string) error {
+	args := m.Called(id)
+	return args.Error(0)
+}

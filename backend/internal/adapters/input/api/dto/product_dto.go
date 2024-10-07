@@ -25,3 +25,11 @@ type CreateProductRequest struct {
 type CreateProductResponse struct {
 	ProductResponse
 }
+
+type UpdateProductRequest struct {
+	ProductResponse
+}
+
+type UpdateProductResponse struct {
+	ProductResponse
+}

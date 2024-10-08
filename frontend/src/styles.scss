@@ -1,5 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
+@use "@angular/material" as mat;
 @import "~bootstrap/dist/css/bootstrap.css";
+
+@include mat.core();
+
+$my-primary: mat.define-palette(mat.$deep-purple-palette, 500);
+$my-accent: mat.define-palette(mat.$indigo-palette, A200, A100, A400);
+
+$my-theme: mat.define-light-theme((
+  color: (
+    primary: $my-primary,
+    accent: $my-accent
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+@include mat.all-component-colors($my-theme);
 
 html,
 body {

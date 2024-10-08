@@ -54,6 +54,20 @@ func main() {
 	apiVersion := http.NewServeMux()
 	apiVersion.Handle("/api/v1/", http.StripPrefix("/api/v1", router))
 
+	dist := "../frontend/dist/acme-shop"
+	files := http.FileServer(http.Dir(dist))
+	apiVersion.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// Try to serve the file directly
+		_, err := http.Dir(dist).Open(r.URL.Path)
+		if err != nil {
+			// If the file doesn't exists, serve index.html
+			http.ServeFile(w, r, dist+"/index.html")
+		} else {
+			// If the file exists, serve it
+			files.ServeHTTP(w, r)
+		}
+	})
+
 	stack := middleware.CreateStack(
 		middleware.Logging,
 		middleware.CORS,

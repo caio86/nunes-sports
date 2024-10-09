@@ -10,7 +10,7 @@ import { ProdutoService } from 'src/app/shared/services/produto.service';
   styleUrls: ['./listagem-produto.component.scss']
 })
 export class ListagemProdutoComponent implements AfterViewInit {
-  displayedColumns: string[] = ["id", "name", "description", "price"]
+  displayedColumns: string[] = ["id", "name", "description", "price", "funcoes"]
   dataSource = new MatTableDataSource<Produto>
   dataSourceLength = 0
 
@@ -40,5 +40,20 @@ export class ListagemProdutoComponent implements AfterViewInit {
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value
     this.dataSource.filter = filterValue.trim().toLowerCase()
+  }
+
+  deletarCliente(id: number) {
+    if (confirm("Você tem certeza que deseja deletar?")) {
+      this.produtoService.deletar(id).subscribe({
+        next: () => {
+          alert("Cliente deletado com sucesso!")
+          this.listarProdutos(1, 5)
+        },
+        error: (err) => {
+          console.error(err);
+          alert("Erro ao deletar cliente!")
+        }
+      })
+    }
   }
 }

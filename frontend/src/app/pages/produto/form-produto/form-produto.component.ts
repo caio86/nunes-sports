@@ -31,6 +31,7 @@ export class FormProdutoComponent implements OnInit {
     const id = Number(this.route.snapshot.paramMap.get("id"))
     if (id) {
       this.isEditMode = true
+      this.formGroup.controls["id"].disable()
       this.produtoService.pesquisarPorID(id).subscribe({
         next: (value) => {
           this.formGroup.patchValue(value)

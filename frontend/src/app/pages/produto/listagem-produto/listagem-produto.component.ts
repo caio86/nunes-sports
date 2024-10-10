@@ -13,13 +13,15 @@ export class ListagemProdutoComponent implements AfterViewInit {
   displayedColumns: string[] = ["id", "name", "description", "price", "funcoes"]
   dataSource = new MatTableDataSource<Produto>
   dataSourceLength = 0
+  page = 1
+  pageSize = 5
 
   constructor(
     private produtoService: ProdutoService
   ) { }
 
   ngAfterViewInit(): void {
-    this.listarProdutos(1, 5)
+    this.listarProdutos(this.page, this.pageSize)
   }
 
   listarProdutos(page: number, pageSize: number) {
@@ -32,9 +34,9 @@ export class ListagemProdutoComponent implements AfterViewInit {
   }
 
   handlePageEvent(event: PageEvent) {
-    const page = event.pageIndex + 1
-    const pageSize = event.pageSize
-    this.listarProdutos(page, pageSize)
+    this.page = event.pageIndex + 1
+    this.pageSize = event.pageSize
+    this.listarProdutos(this.page, this.pageSize)
   }
 
   applyFilter(event: Event) {
@@ -47,7 +49,7 @@ export class ListagemProdutoComponent implements AfterViewInit {
       this.produtoService.deletar(id).subscribe({
         next: () => {
           alert("Cliente deletado com sucesso!")
-          this.listarProdutos(1, 5)
+          this.listarProdutos(this.page, this.pageSize)
         },
         error: (err) => {
           console.error(err);

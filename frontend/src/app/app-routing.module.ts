@@ -12,6 +12,10 @@ const routes: Routes = [
         component: FormProdutoComponent,
       },
       {
+        path: "editar/:id",
+        component: FormProdutoComponent,
+      },
+      {
         path: "",
         component: ListagemProdutoComponent,
       },

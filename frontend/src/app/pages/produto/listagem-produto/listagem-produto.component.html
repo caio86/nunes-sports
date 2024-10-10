@@ -39,7 +39,7 @@
     <ng-container matColumnDef="funcoes">
       <th mat-header-cell *matHeaderCellDef> </th>
       <td mat-cell *matCellDef="let element">
-        <button mat-icon-button>
+        <button mat-icon-button [routerLink]="'/produto/editar/' + element.id">
           <mat-icon fontIcon="edit"></mat-icon>
         </button>
         <button mat-icon-button (click)="deletarCliente(element.id)">

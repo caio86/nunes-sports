@@ -1,6 +1,6 @@
 <div class="container mt-5 d-flex justify-content-center">
   <div>
-    <h1>Novo Produto</h1>
+    <h1>{{!isEditMode? "Novo produto" : "Editar produto"}}</h1>
 
     <form [formGroup]="formGroup" class="mt-4" (ngSubmit)="save()">
 
@@ -30,7 +30,7 @@
 
       <div class="d-flex justify-content-center">
         <button [disabled]="!formGroup.valid" type="submit" mat-raised-button color="primary">
-          Cadastrar
+          {{!isEditMode? "Cadastrar" : "Editar"}}
         </button>
       </div>
     </form>

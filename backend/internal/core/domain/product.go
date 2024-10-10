@@ -44,10 +44,6 @@ func (p *Product) Validate() error {
 		return ErrProductNameRequired
 	}
 
-	if p.Description == "" {
-		return ErrProductDescriptionRequired
-	}
-
 	if p.Price <= 0 {
 		return ErrProductPriceInvalid
 	}

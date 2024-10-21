@@ -86,6 +86,7 @@ export class FormProdutoComponent implements OnInit {
     if (!this.isEditMode) {
       this.cadastarProduto(produto)
     } else {
+      produto.id = this.formGroup.get("id")?.value
       this.atualizarProduto(produto)
     }
   }

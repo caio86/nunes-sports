@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,10 +11,8 @@ import (
 	"github.com/caio86/nunes-sports/backend/internal/adapters/output/database"
 	"github.com/caio86/nunes-sports/backend/internal/core/service"
 	"github.com/caio86/nunes-sports/backend/internal/middleware"
+	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 func main() {
@@ -33,14 +32,14 @@ func main() {
 		password,
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
+	ctx := context.Background()
+
+	conn, err := pgx.Connect(ctx, dsn)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
-	repo := database.NewProductRepository(db)
+	repo := database.NewProductRepository(conn)
 	svc := service.NewProductService(repo)
 	handler := product.New(svc)
 

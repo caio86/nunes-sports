@@ -1,83 +1,114 @@
 package database
 
 import (
+	"context"
+
+	"github.com/caio86/nunes-sports/backend/internal/adapters/output/database/repository"
 	"github.com/caio86/nunes-sports/backend/internal/core/domain"
 	"github.com/caio86/nunes-sports/backend/internal/core/ports"
-	"gorm.io/gorm"
+	"github.com/jackc/pgx/v5"
 )
 
 type productRepository struct {
-	db *gorm.DB
+	conn *pgx.Conn
 }
 
-func NewProductRepository(db *gorm.DB) ports.ProductRepository {
-	// db.AutoMigrate(&domain.Product{})
+func NewProductRepository(conn *pgx.Conn) ports.ProductRepository {
 	return &productRepository{
-		db: db,
+		conn: conn,
 	}
 }
 
-func (r *productRepository) Find(page, limit int) ([]*domain.Product, int64, error) {
-	var products []*domain.Product
-	var total int64
-	var result *gorm.DB
+func (r *productRepository) Find(offset, limit int) ([]*domain.Product, int64, error) {
+	var result []repository.Product
+	var err error
 
-	r.db.Model(&domain.Product{}).Count(&total)
+	ctx := context.Background()
+	repo := repository.New(r.conn)
+
+	total, err := repo.Count(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
 
 	if limit == 0 {
-		result = r.db.Find(&products)
+		result, err = repo.FindAll(ctx)
 	} else {
-		offset := (page - 1) * limit
-		result = r.db.
-			Limit(limit).
-			Offset(offset).
-			Find(&products)
+		offset := (offset - 1) * limit
+		result, err = repo.
+			Find(ctx, repository.FindParams{
+				Limit:  int32(limit),
+				Offset: int32(offset),
+			})
+	}
+	if err != nil {
+		return nil, 0, err
 	}
 
-	if result.Error != nil {
-		return nil, 0, result.Error
+	products := make([]*domain.Product, len(result))
+
+	for i, v := range result {
+		product := &domain.Product{
+			ID:          v.ID,
+			Name:        v.Name,
+			Description: v.Description,
+			Price:       v.Price,
+		}
+		products[i] = product
 	}
 
 	return products, total, nil
 }
 
 func (r *productRepository) FindByID(id string) (*domain.Product, error) {
-	var product *domain.Product
-
-	result := r.db.First(&product, "id = ?", id)
-
-	if result.Error != nil {
-		return nil, result.Error
+	ctx := context.Background()
+	repo := repository.New(r.conn)
+	result, err := repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
 	}
 
-	return product, nil
+	return (*domain.Product)(&result), nil
 }
 
 func (r *productRepository) Save(product *domain.Product) (*domain.Product, error) {
-	result := r.db.Create(product)
-
-	if result.Error != nil {
-		return nil, result.Error
+	ctx := context.Background()
+	repo := repository.New(r.conn)
+	result, err := repo.Create(ctx, repository.CreateParams{
+		ID:          product.ID,
+		Name:        product.Name,
+		Description: product.Description,
+		Price:       product.Price,
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	return product, nil
+	return (*domain.Product)(&result), nil
 }
 
 func (r *productRepository) Update(product *domain.Product) (*domain.Product, error) {
-	result := r.db.Save(product)
-
-	if result.Error != nil {
-		return nil, result.Error
+	ctx := context.Background()
+	repo := repository.New(r.conn)
+	result, err := repo.Update(ctx, repository.UpdateParams{
+		ID:          product.ID,
+		Name:        product.Name,
+		Description: product.Description,
+		Price:       product.Price,
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	return product, nil
+	return (*domain.Product)(&result), nil
 }
 
 func (r *productRepository) Delete(id string) error {
-	result := r.db.Delete(&domain.Product{}, id)
-
-	if result.Error != nil {
-		return result.Error
+	ctx := context.Background()
+	repo := repository.New(r.conn)
+	err := repo.Delete(ctx, id)
+	if err != nil {
+		return err
 	}
 
 	return nil

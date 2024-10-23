@@ -5,15 +5,14 @@ import "strconv"
 type ProductErr string
 
 const (
-	ErrProductInvalidPagination   = ProductErr("invalid pagination")
-	ErrProductIsEmpty             = ProductErr("empty product received")
-	ErrProductIDRequired          = ProductErr("product ID is required")
-	ErrProductIDInvalid           = ProductErr("product ID is invalid")
-	ErrProductNameRequired        = ProductErr("product name is required")
-	ErrProductDescriptionRequired = ProductErr("product description is required")
-	ErrProductPriceInvalid        = ProductErr("product price must be greater than zero")
-	ErrProductNotFound            = ProductErr("product not found")
-	ErrProductAlreadyExists       = ProductErr("product already exists")
+	ErrProductInvalidPagination = ProductErr("invalid pagination")
+	ErrProductIsEmpty           = ProductErr("empty product received")
+	ErrProductIDRequired        = ProductErr("product ID is required")
+	ErrProductIDInvalid         = ProductErr("product ID is invalid")
+	ErrProductNameRequired      = ProductErr("product name is required")
+	ErrProductPriceInvalid      = ProductErr("product price must be greater than zero")
+	ErrProductNotFound          = ProductErr("product not found")
+	ErrProductAlreadyExists     = ProductErr("product already exists")
 )
 
 func (e ProductErr) Error() string {

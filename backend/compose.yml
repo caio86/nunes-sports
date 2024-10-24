@@ -1,10 +1,39 @@
 services:
-  backend:
-    image: nunes-sport
-    container_name: nunes-sport
-    restart: always
+  reverse-proxy:
+    image: traefik:v3.1
+    command:
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      - "--api.insecure=true"
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
     ports:
-      - 8080:8080
+      - "80:80"
+      - "81:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  frontend:
+    image: acme-shop-angular
+    restart: always
+    labels:
+      traefik.enable: true
+      traefik.http.routers.frontend.rule: Host(`acmeshop.com`) && !PathPrefix(`/api`)
+      traefik.http.routers.frontend.entrypoints: web
+    expose:
+      - 80
+    depends_on:
+      api:
+        condition: service_healthy
+
+  api:
+    image: nunes-sport
+    restart: always
+    labels:
+      traefik.enable: true
+      traefik.http.routers.api.rule: Host(`acmeshop.com`) && PathPrefix(`/api`)
+      traefik.http.routers.api.entrypoints: web
     secrets:
       - db-password
     environment:
@@ -13,9 +42,23 @@ services:
       - DB_NAME=nunes-sport
       - DB_USER=postgres
       - DB_PORT=5432
+    expose:
+      - 8080
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--spider",
+          "-q",
+          "http://localhost:8080/api/v1/product",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   db:
     image: postgres
